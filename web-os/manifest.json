@@ -1,0 +1,8 @@
+{
+  "name": "Neon Web OS",
+  "short_name": "NeonOS",
+  "start_url": "/web-os/index.html",
+  "display": "standalone",
+  "background_color": "#0f0520",
+  "theme_color": "#140a2a"
+}

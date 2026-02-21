@@ -1,0 +1,32 @@
+:root{
+  --bg1:#0f0520;
+  --bg2:#140a2a;
+  --neon-cyan:#00f0ff;
+  --neon-magenta:#c500ff;
+  --glass: rgba(255,255,255,0.06);
+}
+*{box-sizing:border-box}
+html,body,#desktop{height:100%;margin:0}
+body{font-family:Inter,Segoe UI,Arial,sans-serif;background:radial-gradient(ellipse at center,var(--bg2),var(--bg1)) fixed;color:#dbe9ff}
+#desktop{position:relative;overflow:hidden;padding:24px}
+#icons{position:absolute;top:24px;left:24px;display:flex;flex-direction:column;gap:12px}
+.icon{width:80px;padding:10px;border-radius:8px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);text-align:center;color:#fff;cursor:pointer;box-shadow:0 4px 30px rgba(0,0,0,0.6);}
+.icon .label{font-size:13px;margin-top:8px;color:#e7f8ff}
+#taskbar{position:fixed;left:0;right:0;bottom:0;height:48px;background:linear-gradient(90deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));backdrop-filter: blur(6px);display:flex;align-items:center;padding:6px 12px;gap:8px}
+#start-button{width:44px;height:36px;border-radius:6px;border:none;background:linear-gradient(180deg,var(--neon-magenta),var(--neon-cyan));color:#03010a;cursor:pointer;font-weight:700}
+#taskbar-windows{flex:1;display:flex;gap:8px}
+.window{position:absolute;width:560px;height:320px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.15));border-radius:10px;box-shadow:0 20px 50px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.04);overflow:hidden}
+.window .titlebar{height:40px;background:linear-gradient(90deg,rgba(0,0,0,0.2),transparent);display:flex;align-items:center;padding:0 12px;gap:8px}
+.title{flex:1;color:#eaf6ff}
+.controls button{background:transparent;border:none;color:#eaf6ff;padding:6px;cursor:pointer}
+.window .content{padding:12px;color:#d6f0ff}
+.hidden{display:none}
+#start-menu{position:fixed;left:12px;bottom:60px;background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(0,0,0,0.2));padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);box-shadow:0 10px 30px rgba(0,0,0,0.6)}
+.button-neon{background:linear-gradient(90deg,var(--neon-magenta),var(--neon-cyan));color:#05020a;border-radius:8px;padding:6px 10px;border:none}
+.app-area textarea{width:100%;height:260px;background:transparent;border:1px dashed rgba(255,255,255,0.06);color:#e9fbff;padding:10px;border-radius:6px}
+
+/* neon glow */
+.window::after{content:"";position:absolute;inset:0;border-radius:10px;box-shadow:0 0 40px 6px rgba(197,0,255,0.06) inset}
+
+/* small responsive */
+@media(max-width:700px){.window{width:90%;height:60%}}

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Neon Web OS</title>
+  <link rel="manifest" href="/web-os/manifest.json">
+  <link rel="stylesheet" href="/web-os/styles.css">
+</head>
+<body>
+  <div id="desktop">
+    <div id="icons"></div>
+    <div id="windows"></div>
+    <div id="taskbar">
+      <button id="start-button">☰</button>
+      <div id="taskbar-windows"></div>
+      <div id="clock"></div>
+    </div>
+    <div id="start-menu" class="hidden">
+      <button data-app="file-explorer">File Explorer</button>
+      <button data-app="text-editor">Text Editor</button>
+      <button data-app="terminal">Terminal</button>
+      <hr>
+      <button id="settings-btn">Settings</button>
+    </div>
+  </div>
+
+  <script type="module" src="/web-os/app.js"></script>
+</body>
+</html>
