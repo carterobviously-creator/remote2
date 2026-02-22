@@ -1,54 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Test Site</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 40px;
-            background: #f4f4f4;
-            line-height: 1.6;
-        }
-        .box {
-            background: white;
-            padding: 20px;
-            border-radius: 6px;
-            max-width: 700px;
-        }
-        h1, h2 {
-            margin-top: 0;
-        }
-        code {
-            background: #eee;
-            padding: 2px 4px;
-            border-radius: 4px;
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ispwin OS</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
 </head>
 <body>
 
-    <div class="box">
-        <h1 id="os">hello</h1>
-
-        <p>Your site will rebuild automatically after each commit.</p>
+  <div id="desktop" class="desktop">
+    <div id="icons" class="icons"></div>
+    <div id="taskbar" class="taskbar">
+      <div id="start" class="start-button">ispwin</div>
+      <div id="taskbar-windows" class="taskbar-windows"></div>
+      <div id="tray" class="tray">
+        <button id="btn-theme" class="tray-button">Theme</button>
+      </div>
     </div>
+  </div>
 
-    <script>
-    function getOS(){
-      const ua = navigator.userAgent || navigator.vendor || window.opera;
-      if (/windows nt/i.test(ua)) return 'Windows';
-      if (/macintosh|mac os x/i.test(ua)) return 'macOS';
-      if (/android/i.test(ua)) return 'Android';
-      if (/iphone|ipad|ipod/i.test(ua)) return 'iOS';
-      if (/linux/i.test(ua)) return 'Linux';
-      return 'Unknown OS';
-    }
-    document.addEventListener('DOMContentLoaded', () => {
-      const h = document.getElementById('os');
-      if (h) h.textContent = getOS();
-    });
-    </script>
+  <!-- Window container -->
+  <div id="windows" class="windows"></div>
 
+  <template id="desktop-icon-template">
+    <div class="icon">
+      <div class="icon-art"></div>
+      <div class="icon-label"></div>
+    </div>
+  </template>
+
+  <script src="assets/js/os.js"></script>
 </body>
 </html>

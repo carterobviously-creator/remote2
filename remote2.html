@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ispwin Remote</title>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; padding: 20px; background:#f6f6f8; }
+    .card{ background:#fff;padding:16px;border-radius:8px; max-width:600px; margin:auto; box-shadow:0 2px 6px rgba(0,0,0,.08) }
+    label{ display:block;margin-top:8px }
+    select,input,textarea{ width:100%; padding:8px; margin-top:6px; box-sizing:border-box }
+    button{ margin-top:10px; padding:8px 12px }
+    .log{ margin-top:12px; background:#111;color:#fff;padding:8px;border-radius:6px; font-family:monospace; height:120px; overflow:auto }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>ispwin Remote Control</h2>
+
+    <label>Command
+      <select id="cmd">
+        <option value="openApp">Open App</option>
+        <option value="setTheme">Set Theme</option>
+        <option value="createFile">Create File</option>
+        <option value="openFile">Open File in Editor</option>
+        <option value="closeWindow">Close Window</option>
+      </select>
+    </label>
+
+    <label>Parameter
+      <input id="param" placeholder="app id (explorer,editor,calculator,settings) or other param" />
+    </label>
+
+    <label>Extra (JSON)
+      <textarea id="extra" placeholder='{"path":"/notes.txt","content":"Hello"}'></textarea>
+    </label>
+
+    <button id="send">Send Command</button>
+
+    <div class="log" id="log"></div>
+  </div>
+
+  <script>
+    // Simple remote that uses BroadcastChannel if available, otherwise localStorage events.
+    const channelName = 'ispwin-channel';
+    const log = document.getElementById('log');
+    function append(s){ log.innerText += (log.innerText ? '\n' : '') + s; log.scrollTop = log.scrollHeight; }
+
+    const bus = (function(){
+      if ('BroadcastChannel' in window){
+        const bc = new BroadcastChannel(channelName);
+        return {
+          send: (ev)=> bc.postMessage(ev),
+          on: (fn) => bc.addEventListener('message', e => fn(e.data))
+        };
+      } else {
+        window.addEventListener('storage', (e)=>{
+          if (e.key === channelName && e.newValue) {
+            try { const obj = JSON.parse(e.newValue); window._remote_storage_handler && window._remote_storage_handler(obj); } catch(e){}
+          }
+        });
+        return {
+          send: (ev)=> {
+            localStorage.setItem(channelName, JSON.stringify(ev));
+            // cleanup to allow subsequent identical events
+            setTimeout(()=> localStorage.removeItem(channelName), 200);
+          },
+          on: (fn)=> window._remote_storage_handler = fn
+        };
+      }
+    })();
+
+    bus.on((ev) => {
+      append('OS → remote: ' + JSON.stringify(ev));
+    });
+
+    document.getElementById('send').addEventListener('click', ()=>{
+      const cmd = document.getElementById('cmd').value;
+      const param = document.getElementById('param').value;
+      const extraRaw = document.getElementById('extra').value.trim();
+      let extra = {};
+      if (extraRaw) {
+        try { extra = JSON.parse(extraRaw); } catch(e){ append('Bad JSON in Extra'); return; }
+      }
+      const payload = { type: 'remote-command', command: cmd, param, extra, id: 'remote2-' + Math.random().toString(36).slice(2) };
+      append('remote → OS: ' + JSON.stringify(payload));
+      bus.send(payload);
+    });
+
+    append('Remote ready. Channel: ' + channelName);
+  </script>
+</body>
+</html>
