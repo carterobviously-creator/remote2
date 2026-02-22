@@ -29,10 +29,26 @@
 <body>
 
     <div class="box">
-        <h1>hello</h1>
+        <h1 id="os">hello</h1>
 
         <p>Your site will rebuild automatically after each commit.</p>
     </div>
+
+    <script>
+    function getOS(){
+      const ua = navigator.userAgent || navigator.vendor || window.opera;
+      if (/windows nt/i.test(ua)) return 'Windows';
+      if (/macintosh|mac os x/i.test(ua)) return 'macOS';
+      if (/android/i.test(ua)) return 'Android';
+      if (/iphone|ipad|ipod/i.test(ua)) return 'iOS';
+      if (/linux/i.test(ua)) return 'Linux';
+      return 'Unknown OS';
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      const h = document.getElementById('os');
+      if (h) h.textContent = getOS();
+    });
+    </script>
 
 </body>
 </html>
