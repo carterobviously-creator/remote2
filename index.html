@@ -427,19 +427,37 @@
       chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
-    async function fakeModelReply(prompt) {
-      const response = await fetch(
-        "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            inputs: prompt
-          })
+   
+      async function fakeModelReply(prompt) {
+  const response = await fetch(
+    "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        inputs: prompt,
+        parameters: {
+          max_new_tokens: 200,
+          temperature: 0.7
         }
-      );
+      })
+    }
+  );
+
+  const data = await response.json();
+
+  if (Array.isArray(data) && data[0]?.generated_text) {
+    return data[0].generated_text;
+  }
+
+  if (data?.generated_text) {
+    return data.generated_text;
+  }
+
+  return "The AI did not return a valid response.";
+}
 
       const data = await response.json();
 
