@@ -5,7 +5,6 @@
   <title>GPT‑5 Black</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    /* ——— GPT‑5 BLACK THEME ——— */
     :root {
       --bg-main: #050509;
       --bg-sidebar: #05060b;
@@ -49,7 +48,6 @@
       );
     }
 
-    /* ——— SIDEBAR ——— */
     .sidebar {
       border-right: 1px solid var(--border-subtle);
       background: radial-gradient(circle at top left, #111827 0, #020308 60%);
@@ -188,7 +186,6 @@
       color: #e5e7eb;
     }
 
-    /* ——— MAIN ——— */
     .main {
       display: flex;
       flex-direction: column;
@@ -240,25 +237,6 @@
       margin-bottom: 16px;
     }
 
-    .empty-card {
-      padding: 10px 11px;
-      border-radius: 14px;
-      background: radial-gradient(circle at top left, #020617, #020617);
-      border: 1px solid rgba(31, 41, 55, 0.9);
-      text-align: left;
-      font-size: 12px;
-      color: #e5e7eb;
-      box-shadow: 0 0 18px rgba(15, 23, 42, 0.9);
-      cursor: pointer;
-      transition: 0.15s ease;
-    }
-
-    .empty-card:hover {
-      border-color: rgba(148, 163, 184, 0.7);
-      box-shadow: 0 0 24px rgba(15, 23, 42, 0.95);
-    }
-
-    /* ——— MESSAGES ——— */
     .message-row {
       display: flex;
       gap: 10px;
@@ -311,7 +289,6 @@
       border-color: rgba(55, 65, 81, 0.9);
     }
 
-    /* ——— INPUT ——— */
     .input-area {
       padding: 10px 16px 14px;
       border-top: 1px solid var(--border-subtle);
@@ -366,4 +343,155 @@
       box-shadow: none;
     }
 
-   
+    @media (max-width: 800px) {
+      .app { grid-template-columns: 0 minmax(0, 1fr); }
+      .sidebar { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="logo-row">
+        <div class="logo-orb"><div class="logo-orb-inner"></div></div>
+        <div>
+          <div class="logo-text-main">GPT‑5 Black</div>
+          <div class="logo-text-sub">Experimental</div>
+        </div>
+      </div>
+
+      <button class="new-chat-btn" id="newChatBtn">
+        <div class="new-chat-plus">+</div>
+        <span>New chat</span>
+      </button>
+
+      <div class="sidebar-section-title">Recent</div>
+      <div class="history-list" id="historyList"></div>
+    </aside>
+
+    <main class="main">
+      <div class="top-bar">
+        <span>GPT‑5 Black</span> · experimental interface
+      </div>
+
+      <div class="chat-container" id="chatContainer">
+        <div class="chat-empty" id="emptyState">
+          <div class="chat-empty-title">What are we exploring today?</div>
+          <div class="chat-empty-sub">Ask anything to begin.</div>
+        </div>
+      </div>
+
+      <div class="input-area">
+        <div class="input-shell">
+          <textarea id="promptInput" class="prompt-input" placeholder="Message GPT‑5 Black..."></textarea>
+          <button class="send-btn" id="sendBtn" disabled>➤</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const chatContainer = document.getElementById("chatContainer");
+    const emptyState = document.getElementById("emptyState");
+    const promptInput = document.getElementById("promptInput");
+    const sendBtn = document.getElementById("sendBtn");
+
+    let messages = [];
+    let isSending = false;
+
+    function renderMessages() {
+      chatContainer.innerHTML = "";
+      if (messages.length === 0) {
+        chatContainer.appendChild(emptyState);
+        return;
+      }
+
+      messages.forEach(msg => {
+        const row = document.createElement("div");
+        row.className = "message-row";
+
+        const avatar = document.createElement("div");
+        avatar.className = "avatar " + (msg.role === "user" ? "avatar-user" : "avatar-ai");
+        avatar.textContent = msg.role === "user" ? "You" : "GPT";
+
+        const bubble = document.createElement("div");
+        bubble.className = "message-bubble " + (msg.role === "user" ? "message-user" : "message-ai");
+        bubble.textContent = msg.content;
+
+        row.appendChild(avatar);
+        row.appendChild(bubble);
+        chatContainer.appendChild(row);
+      });
+
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    async function fakeModelReply(prompt) {
+      const response = await fetch(
+        "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            inputs: prompt
+          })
+        }
+      );
+
+      const data = await response.json();
+
+      if (Array.isArray(data) && data[0]?.generated_text) {
+        return data[0].generated_text;
+      }
+
+      if (data?.generated_text) {
+        return data.generated_text;
+      }
+
+      return "The AI did not return a valid response.";
+    }
+
+    async function sendMessage() {
+      const text = promptInput.value.trim();
+      if (!text || isSending) return;
+
+      isSending = true;
+      sendBtn.disabled = true;
+
+      messages.push({ role: "user", content: text });
+      promptInput.value = "";
+      renderMessages();
+
+      try {
+        const reply = await fakeModelReply(text);
+        messages.push({ role: "assistant", content: reply });
+        renderMessages();
+      } catch (e) {
+        messages.push({
+          role: "assistant",
+          content: "There was an error talking to the model backend.\n\nCheck your network or API wiring and try again."
+        });
+        renderMessages();
+      }
+
+      isSending = false;
+      sendBtn.disabled = false;
+    }
+
+    promptInput.addEventListener("input", () => {
+      sendBtn.disabled = !promptInput.value.trim() || isSending;
+    });
+
+    promptInput.addEventListener("keydown", e => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    sendBtn.addEventListener("click", sendMessage);
+  </script>
+</body>
+</html>
