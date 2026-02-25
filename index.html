@@ -81,6 +81,7 @@
 </div>
 
 <script>
+
 async function fakeModelReply(prompt) {
     const response = await fetch("http://localhost:11434/api/chat", {
         method: "POST",
@@ -88,13 +89,16 @@ async function fakeModelReply(prompt) {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            model: "gemma",
+            model: "gemma:2b",   // ← THIS is the correct model name
             messages: [
                 { role: "user", content: prompt }
             ]
         })
     });
 
+    const data = await response.json();
+    return data.message?.content || "No response from local model.";
+}
     const data = await response.json();
     return data.message?.content || "No response from local model.";
 }
