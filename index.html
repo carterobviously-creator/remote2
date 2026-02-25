@@ -81,28 +81,34 @@
 </div>
 
 <script>
-
+// ------------------------------
+//  FIXED: Ollama request
+// ------------------------------
 async function fakeModelReply(prompt) {
-    const response = await fetch("http://localhost:11434/api/chat", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            model: "gemma:2b",   // ← THIS is the correct model name
-            messages: [
-                { role: "user", content: prompt }
-            ]
-        })
-    });
+    try {
+        const response = await fetch("http://localhost:11434/api/chat", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                model: "gemma:2b",   // YOU SAID YOU INSTALLED THIS ONE
+                messages: [
+                    { role: "user", content: prompt }
+                ]
+            })
+        });
 
-    const data = await response.json();
-    return data.message?.content || "No response from local model.";
-}
-    const data = await response.json();
-    return data.message?.content || "No response from local model.";
+        const data = await response.json();
+        return data.message?.content || "No response from local model.";
+    } catch (err) {
+        return "Error talking to Ollama.";
+    }
 }
 
+// ------------------------------
+//  UI helpers
+// ------------------------------
 function addMessage(text, cls) {
     const chat = document.getElementById("chat");
     const div = document.createElement("div");
@@ -112,6 +118,9 @@ function addMessage(text, cls) {
     chat.scrollTop = chat.scrollHeight;
 }
 
+// ------------------------------
+//  FIXED: Send message function
+// ------------------------------
 async function sendMessage() {
     const input = document.getElementById("prompt");
     const text = input.value.trim();
@@ -124,9 +133,14 @@ async function sendMessage() {
     addMessage(reply, "ai");
 }
 
-document.getElementById("sendBtn").onclick = sendMessage;
-document.getElementById("prompt").addEventListener("keydown", e => {
-    if (e.key === "Enter") sendMessage();
+// ------------------------------
+//  FIXED: Event listeners ALWAYS attach
+// ------------------------------
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("sendBtn").addEventListener("click", sendMessage);
+    document.getElementById("prompt").addEventListener("keydown", e => {
+        if (e.key === "Enter") sendMessage();
+    });
 });
 </script>
 
