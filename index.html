@@ -54,6 +54,7 @@
         height: 50vh;
         border: none;
         border-top: 1px solid #333;
+        background: #000;
     }
 </style>
 </head>
@@ -67,22 +68,30 @@
 
 <div id="output">Your generated code will appear here…</div>
 
-<iframe id="chatFrame" src=""></iframe>
+<!-- ⭐ Elfsight iframe replaces Copilot iframe -->
+<iframe 
+  id="chatFrame"
+  src="https://apps.elfsight.com/widget/XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX/"
+  width="100%" 
+  height="50vh"
+  style="border:0; background:#000;">
+</iframe>
 
 <script>
+// Generate Code button
 document.getElementById("genBtn").onclick = () => {
     const text = document.getElementById("prompt").value.trim();
     if (!text) return;
 
-    // This is where YOU generate code manually using Copilot.
-    // Since Copilot has no public API, we simulate output.
+    // Simulated output (since Copilot has no public API)
     document.getElementById("output").textContent =
         "Send this to Copilot:\n\n" + text;
 };
 
+// Chat button reloads the Elfsight widget
 document.getElementById("chatBtn").onclick = () => {
     document.getElementById("chatFrame").src =
-        "https://copilot.microsoft.com/chats/ovrZdzhMU9VkU7HUWLZsZ";
+        "https://apps.elfsight.com/widget/XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX/";
 };
 </script>
 
