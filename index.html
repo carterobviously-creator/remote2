@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>GPT‑5 Black UI (Ollama Edition)</title>
+<title>Simple CodeGen UI</title>
 <style>
     body {
         margin: 0;
@@ -14,134 +14,76 @@
         height: 100vh;
     }
 
-    #chat {
-        flex: 1;
-        padding: 20px;
-        overflow-y: auto;
-        font-size: 18px;
-        line-height: 1.5;
-    }
-
-    .msg {
-        margin-bottom: 20px;
-        padding: 12px 16px;
-        border-radius: 8px;
-        max-width: 80%;
-    }
-
-    .user {
-        background: #111;
-        border-left: 4px solid #0af;
-        align-self: flex-end;
-    }
-
-    .ai {
-        background: #111;
-        border-left: 4px solid #0f0;
-        align-self: flex-start;
-    }
-
-    #inputBar {
-        display: flex;
+    #topBar {
         padding: 10px;
         background: #111;
+        display: flex;
+        gap: 10px;
     }
 
     #prompt {
         flex: 1;
-        padding: 12px;
-        font-size: 18px;
-        border: none;
-        outline: none;
+        padding: 10px;
         background: #000;
         color: #fff;
         border: 1px solid #333;
         border-radius: 6px;
     }
 
-    #sendBtn {
-        margin-left: 10px;
-        padding: 12px 20px;
+    button {
+        padding: 10px 16px;
         background: #0af;
-        border: none;
         color: #000;
-        font-weight: bold;
+        border: none;
         border-radius: 6px;
         cursor: pointer;
+        font-weight: bold;
+    }
+
+    #output {
+        flex: 1;
+        background: #111;
+        padding: 20px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        border-top: 1px solid #333;
+    }
+
+    #chatFrame {
+        width: 100%;
+        height: 50vh;
+        border: none;
+        border-top: 1px solid #333;
     }
 </style>
 </head>
 <body>
 
-<div id="chat"></div>
-
-<div id="inputBar">
-    <input id="prompt" type="text" placeholder="Ask something…" />
-    <button id="sendBtn">Send</button>
+<div id="topBar">
+    <input id="prompt" type="text" placeholder="Describe the code you want…" />
+    <button id="genBtn">Generate Code</button>
+    <button id="chatBtn">Chat</button>
 </div>
 
+<div id="output">Your generated code will appear here…</div>
+
+<iframe id="chatFrame" src=""></iframe>
+
 <script>
-// ------------------------------
-//  FIXED: Ollama request
-// ------------------------------
-async function fakeModelReply(prompt) {
-    try {
-        const response = await fetch("http://localhost:11434/api/chat", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                model: "gemma:2b",   // YOU SAID YOU INSTALLED THIS ONE
-                messages: [
-                    { role: "user", content: prompt }
-                ]
-            })
-        });
-
-        const data = await response.json();
-        return data.message?.content || "No response from local model.";
-    } catch (err) {
-        return "Error talking to Ollama.";
-    }
-}
-
-// ------------------------------
-//  UI helpers
-// ------------------------------
-function addMessage(text, cls) {
-    const chat = document.getElementById("chat");
-    const div = document.createElement("div");
-    div.className = "msg " + cls;
-    div.textContent = text;
-    chat.appendChild(div);
-    chat.scrollTop = chat.scrollHeight;
-}
-
-// ------------------------------
-//  FIXED: Send message function
-// ------------------------------
-async function sendMessage() {
-    const input = document.getElementById("prompt");
-    const text = input.value.trim();
+document.getElementById("genBtn").onclick = () => {
+    const text = document.getElementById("prompt").value.trim();
     if (!text) return;
 
-    addMessage(text, "user");
-    input.value = "";
+    // This is where YOU generate code manually using Copilot.
+    // Since Copilot has no public API, we simulate output.
+    document.getElementById("output").textContent =
+        "Send this to Copilot:\n\n" + text;
+};
 
-    const reply = await fakeModelReply(text);
-    addMessage(reply, "ai");
-}
-
-// ------------------------------
-//  FIXED: Event listeners ALWAYS attach
-// ------------------------------
-document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("sendBtn").addEventListener("click", sendMessage);
-    document.getElementById("prompt").addEventListener("keydown", e => {
-        if (e.key === "Enter") sendMessage();
-    });
-});
+document.getElementById("chatBtn").onclick = () => {
+    document.getElementById("chatFrame").src =
+        "https://copilot.microsoft.com/chats/ovrZdzhMU9VkU7HUWLZsZ";
+};
 </script>
 
 </body>
