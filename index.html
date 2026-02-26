@@ -68,10 +68,10 @@
 
 <div id="output">Your generated code will appear here…</div>
 
-<!-- ⭐ Elfsight iframe replaces Copilot iframe -->
+<!-- ⭐ Elfsight iframe (your real widget URL) -->
 <iframe 
   id="chatFrame"
-    src="https://apps.elfsight.com/widget/1a2b3c4d-5678-90ab-cdef-1234567890ab/"
+  src="https://apps.elfsight.com/widget/1a2b3c4d-5678-90ab-cdef-1234567890ab/"
   width="100%" 
   height="50vh"
   style="border:0; background:#000;">
@@ -83,7 +83,7 @@ document.getElementById("genBtn").onclick = () => {
     const text = document.getElementById("prompt").value.trim();
     if (!text) return;
 
-    // Simulated output (since Copilot has no public API)
+    // Simulated output (Copilot has no public API)
     document.getElementById("output").textContent =
         "Send this to Copilot:\n\n" + text;
 };
@@ -91,7 +91,7 @@ document.getElementById("genBtn").onclick = () => {
 // Chat button reloads the Elfsight widget
 document.getElementById("chatBtn").onclick = () => {
     document.getElementById("chatFrame").src =
-        "https://apps.elfsight.com/widget/XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX/";
+        "https://apps.elfsight.com/widget/1a2b3c4d-5678-90ab-cdef-1234567890ab/";
 };
 </script>
 
