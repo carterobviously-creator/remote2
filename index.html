@@ -8,23 +8,23 @@
       margin: 0;
       padding: 0;
       height: 100%;
-      background: #050814;
-      color: #ffffff;
-      font-family: sans-serif;
+      background: #0a0f1c;
       overflow: hidden;
+      font-family: sans-serif;
     }
     #gameCanvas {
-      display: block;
       width: 100vw;
       height: 100vh;
-      background: #101628;
+      display: block;
+      background: #1a2238;
     }
-    #overlay {
+    #ui {
       position: absolute;
       top: 10px;
       left: 10px;
       padding: 6px 10px;
-      background: rgba(0,0,0,0.5);
+      background: rgba(0,0,0,0.4);
+      color: white;
       border-radius: 6px;
       font-size: 14px;
     }
@@ -32,72 +32,79 @@
 </head>
 <body>
   <canvas id="gameCanvas"></canvas>
-  <div id="overlay">Rescue Rangers United – HTML prototype (WASD / arrows to move)</div>
+  <div id="ui">Rescue Rangers United – Move with WASD</div>
 
   <script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
 
     function resize() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     }
-    window.addEventListener('resize', resize);
+    window.addEventListener("resize", resize);
     resize();
 
-    const world = {
-      pup: { x: 200, y: 200, speed: 150 },
-      keys: {}
+    const keys = {};
+    window.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
+    window.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
+
+    const pup = {
+      x: 200,
+      y: 200,
+      r: 18,
+      speed: 180
     };
 
-    window.addEventListener('keydown', e => {
-      world.keys[e.key.toLowerCase()] = true;
-    });
-    window.addEventListener('keyup', e => {
-      world.keys[e.key.toLowerCase()] = false;
-    });
+    const tower = {
+      x: 900,
+      y: 300,
+      w: 120,
+      h: 260
+    };
 
-    let lastTime = performance.now();
+    let last = performance.now();
 
     function update(dt) {
-      const p = world.pup;
-      const s = p.speed * dt;
+      const s = pup.speed * dt;
+      if (keys["w"]) pup.y -= s;
+      if (keys["s"]) pup.y += s;
+      if (keys["a"]) pup.x -= s;
+      if (keys["d"]) pup.x += s;
 
-      if (world.keys['w'] || world.keys['arrowup'])    p.y -= s;
-      if (world.keys['s'] || world.keys['arrowdown'])  p.y += s;
-      if (world.keys['a'] || world.keys['arrowleft'])  p.x -= s;
-      if (world.keys['d'] || world.keys['arrowright']) p.x += s;
+      if (pup.x < pup.r) pup.x = pup.r;
+      if (pup.y < pup.r) pup.y = pup.r;
+      if (pup.x > canvas.width - pup.r) pup.x = canvas.width - pup.r;
+      if (pup.y > canvas.height - pup.r) pup.y = canvas.height - pup.r;
     }
 
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Harbor Point ground
-      ctx.fillStyle = '#1b2740';
-      ctx.fillRect(0, canvas.height * 0.4, canvas.width, canvas.height * 0.6);
+      ctx.fillStyle = "#24304f";
+      ctx.fillRect(0, canvas.height * 0.45, canvas.width, canvas.height);
 
-      // Rescue Beacon Tower placeholder
-      ctx.fillStyle = '#3c5cff';
-      const towerW = 80;
-      const towerH = 200;
-      const towerX = canvas.width - towerW - 60;
-      const towerY = canvas.height * 0.4 - towerH;
-      ctx.fillRect(towerX, towerY, towerW, towerH);
+      ctx.fillStyle = "#3c5cff";
+      ctx.fillRect(tower.x, tower.y - tower.h, tower.w, tower.h);
 
-      // Pup (Tracker placeholder)
-      ctx.fillStyle = '#00e0ff';
+      ctx.fillStyle = "#00e0ff";
       ctx.beginPath();
-      ctx.arc(world.pup.x, world.pup.y, 18, 0, Math.PI * 2);
+      ctx.arc(pup.x, pup.y, pup.r, 0, Math.PI * 2);
       ctx.fill();
+
+      if (pup.x > tower.x - 40 && pup.x < tower.x + tower.w + 40 &&
+          pup.y > tower.y - tower.h - 40 && pup.y < tower.y + 40) {
+        ctx.fillStyle = "white";
+        ctx.font = "20px sans-serif";
+        ctx.fillText("Press E to start mission", pup.x - 80, pup.y - 30);
+      }
     }
 
     function loop(now) {
-      const dt = (now - lastTime) / 1000;
-      lastTime = now;
-
+      const dt = (now - last) / 1000;
+      last = now;
       update(dt);
       draw();
-
       requestAnimationFrame(loop);
     }
 
