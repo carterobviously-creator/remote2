@@ -1,114 +1,1107 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Rescue Rangers United</title>
+  <meta charset="UTF-8" />
+  <title>ISPWin-12 – Drive Spinner + Chat Bot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <style>
-    html, body {
+    /* ===========================
+       ISPWin-12 SINGLE PAGE SHELL
+       =========================== */
+
+    :root {
+      --bg: #05060a;
+      --bg-alt: #0b0f18;
+      --accent: #4af2c5;
+      --accent-soft: rgba(74, 242, 197, 0.18);
+      --accent-strong: #6bffe0;
+      --accent-danger: #ff4a7a;
+      --accent-warn: #ffc857;
+      --accent-muted: #3b4a60;
+      --text-main: #f5f7ff;
+      --text-soft: #a9b4d0;
+      --border-soft: #1a2233;
+      --shadow-soft: 0 0 40px rgba(0, 0, 0, 0.7);
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+      --transition-fast: 0.18s ease-out;
+      --transition-med: 0.28s ease-out;
+      --font-main: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular,
+        Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
       margin: 0;
       padding: 0;
+      width: 100%;
       height: 100%;
-      background: #0a0f1c;
+      background: radial-gradient(circle at top, #101525 0, #05060a 55%);
+      color: var(--text-main);
+      font-family: var(--font-main);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
       overflow: hidden;
-      font-family: sans-serif;
     }
-    #gameCanvas {
-      width: 100vw;
-      height: 100vh;
-      display: block;
-      background: #1a2238;
+
+    /* ===========================
+       TOP BAR / TITLE
+       =========================== */
+
+    .top-bar {
+      height: 52px;
+      padding: 0 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(
+        90deg,
+        rgba(10, 14, 24, 0.96),
+        rgba(6, 10, 18, 0.98)
+      );
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      z-index: 10;
     }
-    #ui {
+
+    .top-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .top-orb {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, #ffffff, #4af2c5 40%, #0b0f18 70%);
+      box-shadow: 0 0 18px rgba(74, 242, 197, 0.9);
+    }
+
+    .top-title {
+      font-size: 15px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+    }
+
+    .top-title span {
+      color: var(--accent);
+    }
+
+    .top-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+
+    .top-pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: radial-gradient(circle at top, #1a2233, #05060a);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .top-pill-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 10px rgba(74, 242, 197, 0.9);
+    }
+
+    /* ===========================
+       MAIN LAYOUT
+       =========================== */
+
+    .main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.1fr);
+      gap: 18px;
+      padding: 18px;
+      max-height: calc(100vh - 52px);
+    }
+
+    @media (max-width: 900px) {
+      .main {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+        overflow-y: auto;
+      }
+    }
+
+    /* ===========================
+       PANEL BASE
+       =========================== */
+
+    .panel {
+      position: relative;
+      border-radius: var(--radius-lg);
+      background: radial-gradient(circle at top left, #151b2a, #05060a 60%);
+      border: 1px solid var(--border-soft);
+      box-shadow: var(--shadow-soft);
+      padding: 14px 14px 12px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .panel-title {
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-title-pill {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      box-shadow: 0 0 10px rgba(74, 242, 197, 0.6);
+    }
+
+    .panel-subtitle {
+      font-size: 11px;
+      color: var(--text-soft);
+      opacity: 0.8;
+    }
+
+    .panel-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 0;
+    }
+
+    /* ===========================
+       DRIVE SPINNER PANEL
+       =========================== */
+
+    .drive-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      gap: 14px;
+      min-height: 0;
+    }
+
+    @media (max-width: 900px) {
+      .drive-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .drive-visual {
+      position: relative;
+      border-radius: var(--radius-md);
+      background: radial-gradient(circle at 30% 0, #1b2438, #05060a 70%);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 14px;
+      overflow: hidden;
+    }
+
+    .drive-visual-inner {
+      position: relative;
+      width: 100%;
+      height: 220px;
+      max-height: 260px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .drive-disc-shadow {
       position: absolute;
-      top: 10px;
-      left: 10px;
-      padding: 6px 10px;
-      background: rgba(0,0,0,0.4);
-      color: white;
-      border-radius: 6px;
+      width: 210px;
+      height: 210px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(0, 0, 0, 0.9), transparent 70%);
+      filter: blur(18px);
+      opacity: 0.7;
+      transform: translateY(40px);
+    }
+
+    .drive-disc {
+      position: relative;
+      width: 190px;
+      height: 190px;
+      border-radius: 999px;
+      background:
+        conic-gradient(
+          from 0deg,
+          #4af2c5,
+          #4a9ff2,
+          #9b4af2,
+          #f24aa8,
+          #ffc857,
+          #4af2c5
+        );
+      box-shadow:
+        0 0 40px rgba(74, 242, 197, 0.7),
+        0 0 80px rgba(0, 0, 0, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform var(--transition-med), filter var(--transition-med),
+        box-shadow var(--transition-med), opacity var(--transition-med);
+      transform-origin: center center;
+    }
+
+    .drive-disc::before {
+      content: "";
+      position: absolute;
+      width: 70%;
+      height: 70%;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, #ffffff, #f5f5f5 30%, #b0b0b0 60%, #666 80%);
+      mix-blend-mode: screen;
+      opacity: 0.9;
+    }
+
+    .drive-disc::after {
+      content: "";
+      position: absolute;
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, #ffffff, #d0d0d0 40%, #777 80%);
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.8);
+    }
+
+    .drive-disc-label {
+      position: absolute;
+      inset: 18%;
+      border-radius: 999px;
+      border: 1px dashed rgba(0, 0, 0, 0.2);
+      pointer-events: none;
+    }
+
+    .drive-disc-ring {
+      position: absolute;
+      inset: 6%;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      mix-blend-mode: screen;
+      pointer-events: none;
+    }
+
+    .drive-disc-speed {
+      position: absolute;
+      bottom: 10px;
+      right: 12px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(5, 6, 10, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--accent);
+      text-shadow: 0 0 8px rgba(74, 242, 197, 0.8);
+    }
+
+    .drive-status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+
+    .drive-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(5, 6, 10, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .drive-status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--accent-muted);
+      box-shadow: 0 0 8px rgba(59, 74, 96, 0.9);
+    }
+
+    .drive-status-dot.active {
+      background: var(--accent);
+      box-shadow: 0 0 10px rgba(74, 242, 197, 0.9);
+    }
+
+    .drive-status-label {
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 10px;
+    }
+
+    .drive-metrics {
+      display: flex;
+      gap: 8px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+    }
+
+    .drive-metric-pill {
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(5, 6, 10, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: var(--text-soft);
+    }
+
+    .drive-metric-pill span {
+      color: var(--accent);
+    }
+
+    .drive-controls {
+      border-radius: var(--radius-md);
+      background: radial-gradient(circle at top, #151b26, #05060a 70%);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 12px;
+    }
+
+    .drive-controls-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .drive-controls-label {
+      font-size: 11px;
+      color: var(--text-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .drive-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: radial-gradient(circle at top, #1a2233, #05060a);
+      color: var(--text-main);
+      font-size: 11px;
+      padding: 6px 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background var(--transition-fast), transform var(--transition-fast),
+        box-shadow var(--transition-fast), border-color var(--transition-fast);
+    }
+
+    .btn span {
+      font-size: 13px;
+    }
+
+    .btn:hover {
+      background: radial-gradient(circle at top, #222c42, #05060a);
+      transform: translateY(-1px);
+      box-shadow: 0 0 18px rgba(74, 242, 197, 0.4);
+      border-color: rgba(74, 242, 197, 0.6);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    .btn-danger {
+      border-color: rgba(255, 74, 122, 0.7);
+      color: var(--accent-danger);
+    }
+
+    .btn-danger:hover {
+      box-shadow: 0 0 18px rgba(255, 74, 122, 0.6);
+      background: radial-gradient(circle at top, #3a1220, #05060a);
+    }
+
+    .drive-slider-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .drive-slider-row label {
+      font-size: 11px;
+      color: var(--text-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      white-space: nowrap;
+    }
+
+    .drive-slider-row span {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--accent);
+      min-width: 70px;
+      text-align: right;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 4px;
+      border-radius: 999px;
+      background: #151b26;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 12px rgba(74, 242, 197, 0.9);
+      border: 2px solid #05060a;
+      margin-top: -5px;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 12px rgba(74, 242, 197, 0.9);
+      border: 2px solid #05060a;
+    }
+
+    input[type="range"]::-moz-range-track {
+      height: 4px;
+      border-radius: 999px;
+      background: #151b26;
+    }
+
+    .drive-log {
+      border-radius: var(--radius-md);
+      background: radial-gradient(circle at top, #111624, #05060a 70%);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 8px 10px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--text-soft);
+      height: 110px;
+      overflow-y: auto;
+    }
+
+    .drive-log-line {
+      margin-bottom: 2px;
+      white-space: pre-wrap;
+    }
+
+    .drive-log-line span {
+      color: var(--accent);
+    }
+
+    /* ===========================
+       CHAT BOT PANEL
+       =========================== */
+
+    .chat-panel {
+      position: relative;
+    }
+
+    .chat-body {
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) auto;
+      gap: 10px;
+      min-height: 0;
+      height: 100%;
+    }
+
+    .chat-log {
+      border-radius: var(--radius-md);
+      background: radial-gradient(circle at top, #111624, #05060a 70%);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 10px;
+      font-size: 12px;
+      overflow-y: auto;
+      min-height: 0;
+    }
+
+    .chat-message {
+      margin-bottom: 8px;
+      max-width: 100%;
+    }
+
+    .chat-message-role {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--text-soft);
+      margin-bottom: 2px;
+    }
+
+    .chat-message-role.user {
+      color: var(--accent);
+    }
+
+    .chat-message-role.bot {
+      color: var(--accent-soft);
+    }
+
+    .chat-message-bubble {
+      border-radius: 12px;
+      padding: 7px 9px;
+      line-height: 1.4;
+      background: rgba(5, 6, 10, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .chat-message-bubble.user {
+      background: radial-gradient(circle at top, #1a2233, #05060a);
+      border-color: rgba(74, 242, 197, 0.5);
+    }
+
+    .chat-message-bubble.bot {
+      background: radial-gradient(circle at top, #151b26, #05060a);
+      border-color: rgba(255, 255, 255, 0.06);
+    }
+
+    .chat-input-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .chat-input-wrapper {
+      position: relative;
+    }
+
+    .chat-input {
+      width: 100%;
+      min-height: 40px;
+      max-height: 80px;
+      resize: none;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: radial-gradient(circle at top, #05060a, #05060a);
+      color: var(--text-main);
+      font-size: 12px;
+      padding: 8px 9px 8px 9px;
+      font-family: var(--font-main);
+      outline: none;
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.6);
+    }
+
+    .chat-input:focus {
+      border-color: rgba(74, 242, 197, 0.7);
+      box-shadow:
+        inset 0 0 0 1px rgba(0, 0, 0, 0.7),
+        0 0 18px rgba(74, 242, 197, 0.4);
+    }
+
+    .chat-input-hint {
+      position: absolute;
+      right: 8px;
+      bottom: 4px;
+      font-size: 9px;
+      color: var(--text-soft);
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .chat-send-btn {
+      height: 40px;
+      padding-inline: 14px;
+      font-size: 12px;
+    }
+
+    .chat-send-btn span {
       font-size: 14px;
+    }
+
+    .chat-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      color: var(--text-soft);
+      margin-top: 2px;
+    }
+
+    .chat-footer-pill {
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(5, 6, 10, 0.9);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chat-footer-pill-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      box-shadow: 0 0 8px rgba(74, 242, 197, 0.7);
+    }
+
+    .chat-footer-right {
+      opacity: 0.7;
+    }
+
+    /* ===========================
+       SCROLLBARS
+       =========================== */
+
+    .drive-log::-webkit-scrollbar,
+    .chat-log::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .drive-log::-webkit-scrollbar-track,
+    .chat-log::-webkit-scrollbar-track {
+      background: #05060a;
+    }
+
+    .drive-log::-webkit-scrollbar-thumb,
+    .chat-log::-webkit-scrollbar-thumb {
+      background: #1a2233;
+      border-radius: 999px;
+    }
+
+    .drive-log::-webkit-scrollbar-thumb:hover,
+    .chat-log::-webkit-scrollbar-thumb:hover {
+      background: #222c42;
     }
   </style>
 </head>
 <body>
-  <canvas id="gameCanvas"></canvas>
-  <div id="ui">Rescue Rangers United – Move with WASD</div>
+  <!-- ===========================
+       TOP BAR
+       =========================== -->
+  <header class="top-bar">
+    <div class="top-bar-left">
+      <div class="top-orb"></div>
+      <div class="top-title">
+        ISPWIN-<span>12</span> • INLINE LAB
+      </div>
+    </div>
+    <div class="top-bar-right">
+      <div class="top-pill">
+        <div class="top-pill-dot"></div>
+        <div>Drive + Chat Inline Prototype</div>
+      </div>
+    </div>
+  </header>
 
+  <!-- ===========================
+       MAIN LAYOUT
+       =========================== -->
+  <main class="main">
+    <!-- DRIVE SPINNER PANEL -->
+    <section class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <div class="panel-title-pill"></div>
+          DRIVE SPINNER
+        </div>
+        <div class="panel-subtitle">
+          Optical Ritual Emulator • Inline
+        </div>
+      </div>
+
+      <div class="panel-body">
+        <div class="drive-layout">
+          <!-- Visual -->
+          <div class="drive-visual">
+            <div class="drive-visual-inner">
+              <div class="drive-disc-shadow"></div>
+              <div class="drive-disc" id="driveDisc">
+                <div class="drive-disc-label"></div>
+                <div class="drive-disc-ring"></div>
+                <div class="drive-disc-speed" id="driveSpeedLabel">
+                  0 RPM
+                </div>
+              </div>
+            </div>
+            <div class="drive-status-row">
+              <div class="drive-status-pill">
+                <div class="drive-status-dot" id="driveStatusDot"></div>
+                <div class="drive-status-label" id="driveStatusLabel">
+                  IDLE
+                </div>
+              </div>
+              <div class="drive-metrics">
+                <div class="drive-metric-pill">
+                  RPM: <span id="driveMetricRpm">0</span>
+                </div>
+                <div class="drive-metric-pill">
+                  LOAD: <span id="driveMetricLoad">0%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Controls + Log -->
+          <div class="drive-controls">
+            <div class="drive-controls-row">
+              <div class="drive-controls-label">
+                SPIN CONTROL
+              </div>
+              <div class="drive-buttons">
+                <button class="btn" id="driveStartBtn">
+                  <span>▶</span> Spin
+                </button>
+                <button class="btn btn-danger" id="driveStopBtn">
+                  <span>■</span> Stop
+                </button>
+              </div>
+            </div>
+
+            <div class="drive-slider-row">
+              <label for="driveSpeedRange">Target RPM</label>
+              <input
+                type="range"
+                id="driveSpeedRange"
+                min="0"
+                max="100"
+                value="40"
+              />
+              <span id="driveSpeedTargetLabel">~4800 RPM</span>
+            </div>
+
+            <div class="drive-slider-row">
+              <label for="driveChaosRange">Chaos</label>
+              <input
+                type="range"
+                id="driveChaosRange"
+                min="0"
+                max="100"
+                value="20"
+              />
+              <span id="driveChaosLabel">20%</span>
+            </div>
+
+            <div class="drive-log" id="driveLog"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CHAT BOT PANEL -->
+    <section class="panel chat-panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <div class="panel-title-pill"></div>
+          INLINE CHAT BOT
+        </div>
+        <div class="panel-subtitle">
+          Tiny ISPWin-12 Helper • Local Rules Only
+        </div>
+      </div>
+
+      <div class="panel-body chat-body">
+        <div class="chat-log" id="chatLog"></div>
+
+        <div>
+          <div class="chat-input-row">
+            <div class="chat-input-wrapper">
+              <textarea
+                id="chatInput"
+                class="chat-input"
+                rows="2"
+                placeholder="Ask the tiny bot something..."
+              ></textarea>
+              <div class="chat-input-hint">Enter to send • Shift+Enter for newline</div>
+            </div>
+            <button class="btn chat-send-btn" id="chatSendBtn">
+              <span>➤</span> Send
+            </button>
+          </div>
+          <div class="chat-footer">
+            <div class="chat-footer-pill">
+              <div class="chat-footer-pill-dot"></div>
+              <div>Mode: ISPWin-12 Local Toy Model</div>
+            </div>
+            <div class="chat-footer-right">
+              No network • No storage • Just vibes
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===========================
+       SCRIPT
+       =========================== -->
   <script>
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
+    // ==========================
+    // DRIVE SPINNER LOGIC
+    // ==========================
 
-    function resize() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    window.addEventListener("resize", resize);
-    resize();
+    (function () {
+      const disc = document.getElementById("driveDisc");
+      const statusDot = document.getElementById("driveStatusDot");
+      const statusLabel = document.getElementById("driveStatusLabel");
+      const speedLabel = document.getElementById("driveSpeedLabel");
+      const metricRpm = document.getElementById("driveMetricRpm");
+      const metricLoad = document.getElementById("driveMetricLoad");
+      const speedRange = document.getElementById("driveSpeedRange");
+      const speedTargetLabel = document.getElementById("driveSpeedTargetLabel");
+      const chaosRange = document.getElementById("driveChaosRange");
+      const chaosLabel = document.getElementById("driveChaosLabel");
+      const startBtn = document.getElementById("driveStartBtn");
+      const stopBtn = document.getElementById("driveStopBtn");
+      const logEl = document.getElementById("driveLog");
 
-    const keys = {};
-    window.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
-    window.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
+      let currentRpm = 0;
+      let targetRpm = 4800;
+      let isSpinning = false;
+      let lastTime = performance.now();
+      let angle = 0;
 
-    const pup = {
-      x: 200,
-      y: 200,
-      r: 18,
-      speed: 180
-    };
-
-    const tower = {
-      x: 900,
-      y: 300,
-      w: 120,
-      h: 260
-    };
-
-    let last = performance.now();
-
-    function update(dt) {
-      const s = pup.speed * dt;
-      if (keys["w"]) pup.y -= s;
-      if (keys["s"]) pup.y += s;
-      if (keys["a"]) pup.x -= s;
-      if (keys["d"]) pup.x += s;
-
-      if (pup.x < pup.r) pup.x = pup.r;
-      if (pup.y < pup.r) pup.y = pup.r;
-      if (pup.x > canvas.width - pup.r) pup.x = canvas.width - pup.r;
-      if (pup.y > canvas.height - pup.r) pup.y = canvas.height - pup.r;
-    }
-
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      ctx.fillStyle = "#24304f";
-      ctx.fillRect(0, canvas.height * 0.45, canvas.width, canvas.height);
-
-      ctx.fillStyle = "#3c5cff";
-      ctx.fillRect(tower.x, tower.y - tower.h, tower.w, tower.h);
-
-      ctx.fillStyle = "#00e0ff";
-      ctx.beginPath();
-      ctx.arc(pup.x, pup.y, pup.r, 0, Math.PI * 2);
-      ctx.fill();
-
-      if (pup.x > tower.x - 40 && pup.x < tower.x + tower.w + 40 &&
-          pup.y > tower.y - tower.h - 40 && pup.y < tower.y + 40) {
-        ctx.fillStyle = "white";
-        ctx.font = "20px sans-serif";
-        ctx.fillText("Press E to start mission", pup.x - 80, pup.y - 30);
+      function log(line) {
+        const el = document.createElement("div");
+        el.className = "drive-log-line";
+        const time = new Date().toLocaleTimeString();
+        el.innerHTML = "[" + time + "] " + line;
+        logEl.appendChild(el);
+        logEl.scrollTop = logEl.scrollHeight;
       }
-    }
 
-    function loop(now) {
-      const dt = (now - last) / 1000;
-      last = now;
-      update(dt);
-      draw();
+      function updateTargetLabel() {
+        const v = Number(speedRange.value);
+        const rpm = Math.round((v / 100) * 12000);
+        targetRpm = rpm;
+        speedTargetLabel.textContent = "~" + rpm + " RPM";
+      }
+
+      function updateChaosLabel() {
+        const v = Number(chaosRange.value);
+        chaosLabel.textContent = v + "%";
+      }
+
+      function setStatus(active) {
+        isSpinning = active;
+        if (active) {
+          statusDot.classList.add("active");
+          statusLabel.textContent = "SPINNING";
+        } else {
+          statusDot.classList.remove("active");
+          statusLabel.textContent = "IDLE";
+        }
+      }
+
+      function startSpin() {
+        if (!isSpinning) {
+          setStatus(true);
+          log("<span>SPIN</span> command accepted. Ramping up.");
+        } else {
+          log("Spin command ignored: already spinning.");
+        }
+      }
+
+      function stopSpin() {
+        if (isSpinning) {
+          setStatus(false);
+          log("<span>STOP</span> command accepted. Ramping down.");
+        } else {
+          log("Stop command ignored: already idle.");
+        }
+      }
+
+      function loop(now) {
+        const dt = (now - lastTime) / 1000;
+        lastTime = now;
+
+        const chaos = Number(chaosRange.value) / 100;
+
+        const desired = isSpinning ? targetRpm : 0;
+        const diff = desired - currentRpm;
+        const accel = diff * (isSpinning ? 2.5 : 3.5) * dt;
+
+        let noise = 0;
+        if (chaos > 0 && isSpinning) {
+          const baseNoise = (Math.random() - 0.5) * 2 * 2000 * chaos;
+          noise = baseNoise;
+        }
+
+        currentRpm += accel + noise;
+        if (currentRpm < 0) currentRpm = 0;
+
+        const displayRpm = Math.round(currentRpm);
+        const load = Math.min(100, Math.round((displayRpm / 12000) * 100));
+
+        metricRpm.textContent = displayRpm;
+        metricLoad.textContent = load + "%";
+        speedLabel.textContent = displayRpm + " RPM";
+
+        const spinSpeed = displayRpm / 12000;
+        angle += spinSpeed * 360 * dt;
+        disc.style.transform = "rotate(" + angle + "deg) scale(" + (0.96 + spinSpeed * 0.12) + ")";
+
+        const blur = 1 + spinSpeed * 6;
+        const glow = 0.4 + spinSpeed * 0.8;
+        disc.style.filter =
+          "blur(" + blur.toFixed(2) + "px) drop-shadow(0 0 " + (20 + spinSpeed * 40).toFixed(1) + "px rgba(74, 242, 197, " + glow.toFixed(2) + "))";
+
+        requestAnimationFrame(loop);
+      }
+
+      speedRange.addEventListener("input", updateTargetLabel);
+      chaosRange.addEventListener("input", updateChaosLabel);
+      startBtn.addEventListener("click", startSpin);
+      stopBtn.addEventListener("click", stopSpin);
+
+      updateTargetLabel();
+      updateChaosLabel();
+      log("Drive spinner ready. Use Spin / Stop and adjust RPM + Chaos.");
+
       requestAnimationFrame(loop);
-    }
+    })();
 
-    requestAnimationFrame(loop);
+    // ==========================
+    // TINY CHAT BOT LOGIC
+    // ==========================
+
+    (function () {
+      const chatLog = document.getElementById("chatLog");
+      const chatInput = document.getElementById("chatInput");
+      const chatSendBtn = document.getElementById("chatSendBtn");
+
+      function addMessage(role, text) {
+        const wrapper = document.createElement("div");
+        wrapper.className = "chat-message";
+
+        const roleEl = document.createElement("div");
+        roleEl.className = "chat-message-role " + role;
+        roleEl.textContent = role === "user" ? "You" : "ISPWin-12 Bot";
+
+        const bubble = document.createElement("div");
+        bubble.className = "chat-message-bubble " + role;
+        bubble.textContent = text;
+
+        wrapper.appendChild(roleEl);
+        wrapper.appendChild(bubble);
+        chatLog.appendChild(wrapper);
+        chatLog.scrollTop = chatLog.scrollHeight;
+      }
+
+      function tinyBotReply(input) {
+        const text = input.trim().toLowerCase();
+
+        if (!text) {
+          return "Say something and I’ll echo it back with a tiny bit of ISPWin-12 flavor.";
+        }
+
+        if (text.includes("hello") || text.includes("hi")) {
+          return "Hello from inside this single index.html. No servers, no cloud—just a tiny ritual.";
+        }
+
+        if (text.includes("drive") || text.includes("spinner")) {
+          return "The drive spinner is purely visual here, but you can pretend it’s stressing a real optical drive.";
+        }
+
+        if (text.includes("ispwin")) {
+          return "ISPWin-12 here: neon OS, chaos packs, and everything running from one HTML file. Very on-brand.";
+        }
+
+        if (text.includes("help")) {
+          return "I can’t do much, but I can chat, riff on your text, and keep the vibe going.";
+        }
+
+        if (text.includes("clear")) {
+          return "If you want to clear the chat, just refresh the page. I forget everything instantly.";
+        }
+
+        if (text.includes("who are you")) {
+          return "I’m a tiny inline bot baked into this page—no network, no memory, just a local echo spirit.";
+        }
+
+        if (text.includes("thank")) {
+          return "You’re welcome. Consider this a tiny badge for running ISPWin-12 in a single file.";
+        }
+
+        if (text.length < 12) {
+          return "Short message detected. I’ll just mirror it back with a twist: [" + input.trim() + "] + ISPWin-12 energy.";
+        }
+
+        return (
+          "You said: \"" +
+          input.trim() +
+          "\"\n" +
+          "In this tiny sandbox, I can’t do real processing, but I can acknowledge it and keep you company."
+        );
+      }
+
+      function handleSend() {
+        const text = chatInput.value;
+        if (!text.trim()) return;
+
+        addMessage("user", text.trim());
+        chatInput.value = "";
+
+        const reply = tinyBotReply(text);
+        setTimeout(() => {
+          addMessage("bot", reply);
+        }, 120);
+      }
+
+      chatSendBtn.addEventListener("click", handleSend);
+
+      chatInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          handleSend();
+        }
+      });
+
+      addMessage(
+        "bot",
+        "Tiny ISPWin-12 chat online. No backend, no storage—just this one HTML file pretending to be an OS."
+      );
+    })();
   </script>
 </body>
 </html>
