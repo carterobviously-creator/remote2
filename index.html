@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Technic EV3 Sim v0</title>
+  <title>Technic EV3 Sandbox</title>
   <style>
     body { background:#111; color:#eee; font-family:sans-serif; }
     .panel { padding:10px; margin:10px; border:1px solid #555; display:inline-block; }
@@ -10,51 +10,71 @@
   </style>
 </head>
 <body>
-  <div class="panel">
-    <h3>Button</h3>
-    <div id="button-state">released</div>
-    <button id="button-toggle">Press / Release</button>
-  </div>
 
-  <div class="panel">
-    <h3>Motor A</h3>
-    <div>Power: <span id="motor-power">0</span></div>
-    <div>Position: <span id="motor-pos">0</span> deg</div>
-  </div>
+<div class="panel">
+  <h3>Button 1</h3>
+  <div id="btn1-state">released</div>
+  <button id="btn1-toggle">Press / Release</button>
+</div>
+
+<div class="panel">
+  <h3>Motor A</h3>
+  <div>Power: <span id="mA-power">0</span></div>
+  <div>Position: <span id="mA-pos">0</span> deg</div>
+</div>
+
+<div class="panel">
+  <h3>Motor B</h3>
+  <div>Power: <span id="mB-power">0</span></div>
+  <div>Position: <span id="mB-pos">0</span> deg</div>
+</div>
 
 <script>
+// COMPONENT REGISTRY
 const sim = {
-  button: { pressed: false },
-  motorA: { power: 0, position: 0 }
+  buttons: {
+    b1: { pressed: false }
+  },
+  motors: {
+    A: { power: 0, position: 0 },
+    B: { power: 0, position: 0 }
+  },
+  sensors: {
+    touch1: { pressed: false },
+    distance1: { value: 50 }
+  }
 };
 
-// UI wiring
-const buttonStateEl = document.getElementById('button-state');
-const buttonToggleEl = document.getElementById('button-toggle');
-const motorPowerEl  = document.getElementById('motor-power');
-const motorPosEl    = document.getElementById('motor-pos');
-
-buttonToggleEl.onclick = () => {
-  sim.button.pressed = !sim.button.pressed;
-  buttonStateEl.textContent = sim.button.pressed ? 'pressed' : 'released';
+// UI WIRING
+document.getElementById('btn1-toggle').onclick = () => {
+  sim.buttons.b1.pressed = !sim.buttons.b1.pressed;
+  document.getElementById('btn1-state').textContent =
+    sim.buttons.b1.pressed ? 'pressed' : 'released';
 };
 
-// "program" – this is where EV3‑style logic lives
+// USER PROGRAM (EV3-style logic)
 function userProgram(sim) {
-  // if button pressed, run motor at 50, else stop
-  sim.motorA.power = sim.button.pressed ? 50 : 0;
+  // Example: Button 1 drives Motor A
+  sim.motors.A.power = sim.buttons.b1.pressed ? 60 : 0;
+
+  // Example: Distance sensor controls Motor B
+  sim.motors.B.power = sim.sensors.distance1.value < 30 ? 100 : 0;
 }
 
-// simulation loop
+// SIMULATION LOOP
 function tick() {
   userProgram(sim);
 
-  // update motor position based on power
-  sim.motorA.position += sim.motorA.power * 0.1; // fake physics
+  // Update motors
+  for (const m of Object.values(sim.motors)) {
+    m.position += m.power * 0.1;
+  }
 
-  // update UI
-  motorPowerEl.textContent = sim.motorA.power;
-  motorPosEl.textContent   = sim.motorA.position.toFixed(1);
+  // Update UI
+  document.getElementById('mA-power').textContent = sim.motors.A.power;
+  document.getElementById('mA-pos').textContent = sim.motors.A.position.toFixed(1);
+  document.getElementById('mB-power').textContent = sim.motors.B.power;
+  document.getElementById('mB-pos').textContent = sim.motors.B.position.toFixed(1);
 
   requestAnimationFrame(tick);
 }
