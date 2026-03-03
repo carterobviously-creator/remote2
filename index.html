@@ -1,85 +1,126 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Technic EV3 Sandbox</title>
-  <style>
-    body { background:#111; color:#eee; font-family:sans-serif; }
-    .panel { padding:10px; margin:10px; border:1px solid #555; display:inline-block; }
-    button { padding:8px 16px; margin-top:8px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ping Pong Game</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #000;
+            margin: 0;
+        }
+        canvas {
+            background: #333;
+            border: 2px solid #fff;
+        }
+    </style>
 </head>
 <body>
+    <canvas id="pingPongCanvas" width="800" height="400"></canvas>
+    
+    <script>
+        const canvas = document.getElementById('pingPongCanvas');
+        const ctx = canvas.getContext('2d');
 
-<div class="panel">
-  <h3>Button 1</h3>
-  <div id="btn1-state">released</div>
-  <button id="btn1-toggle">Press / Release</button>
-</div>
+        const paddleWidth = 10;
+        const paddleHeight = 100;
+        const ballSize = 10;
 
-<div class="panel">
-  <h3>Motor A</h3>
-  <div>Power: <span id="mA-power">0</span></div>
-  <div>Position: <span id="mA-pos">0</span> deg</div>
-</div>
+        let playerY = (canvas.height - paddleHeight) / 2;
+        let enemyY = (canvas.height - paddleHeight) / 2;
+        let ballX = canvas.width / 2;
+        let ballY = canvas.height / 2;
+        let ballSpeedX = 5;
+        let ballSpeedY = 3;
+        let playerScore = 0;
+        let enemyScore = 0;
 
-<div class="panel">
-  <h3>Motor B</h3>
-  <div>Power: <span id="mB-power">0</span></div>
-  <div>Position: <span id="mB-pos">0</span> deg</div>
-</div>
+        function draw() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-<script>
-// COMPONENT REGISTRY
-const sim = {
-  buttons: {
-    b1: { pressed: false }
-  },
-  motors: {
-    A: { power: 0, position: 0 },
-    B: { power: 0, position: 0 }
-  },
-  sensors: {
-    touch1: { pressed: false },
-    distance1: { value: 50 }
-  }
-};
+            // Draw paddles
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, playerY, paddleWidth, paddleHeight); // Player paddle
+            ctx.fillRect(canvas.width - paddleWidth, enemyY, paddleWidth, paddleHeight); // Enemy paddle
 
-// UI WIRING
-document.getElementById('btn1-toggle').onclick = () => {
-  sim.buttons.b1.pressed = !sim.buttons.b1.pressed;
-  document.getElementById('btn1-state').textContent =
-    sim.buttons.b1.pressed ? 'pressed' : 'released';
-};
+            // Draw ball
+            ctx.beginPath();
+            ctx.arc(ballX, ballY, ballSize, 0, Math.PI * 2);
+            ctx.fill();
 
-// USER PROGRAM (EV3-style logic)
-function userProgram(sim) {
-  // Example: Button 1 drives Motor A
-  sim.motors.A.power = sim.buttons.b1.pressed ? 60 : 0;
+            // Draw scores
+            ctx.font = '20px Arial';
+            ctx.fillText(`Player: ${playerScore}`, 50, 20);
+            ctx.fillText(`Enemy: ${enemyScore}`, canvas.width - 100, 20);
+        }
 
-  // Example: Distance sensor controls Motor B
-  sim.motors.B.power = sim.sensors.distance1.value < 30 ? 100 : 0;
-}
+        function update() {
+            // Move ball
+            ballX += ballSpeedX;
+            ballY += ballSpeedY;
 
-// SIMULATION LOOP
-function tick() {
-  userProgram(sim);
+            // Ball collision with top and bottom
+            if (ballY - ballSize < 0 || ballY + ballSize > canvas.height) {
+                ballSpeedY = -ballSpeedY;
+            }
 
-  // Update motors
-  for (const m of Object.values(sim.motors)) {
-    m.position += m.power * 0.1;
-  }
+            // Ball collision with paddles
+            if (ballX < paddleWidth && ballY > playerY && ballY < playerY + paddleHeight) {
+                ballSpeedX = -ballSpeedX;
+                playerScore++;
+            }
+            if (ballX > canvas.width - paddleWidth && ballY > enemyY && ballY < enemyY + paddleHeight) {
+                ballSpeedX = -ballSpeedX;
+                enemyScore++;
+            }
 
-  // Update UI
-  document.getElementById('mA-power').textContent = sim.motors.A.power;
-  document.getElementById('mA-pos').textContent = sim.motors.A.position.toFixed(1);
-  document.getElementById('mB-power').textContent = sim.motors.B.power;
-  document.getElementById('mB-pos').textContent = sim.motors.B.position.toFixed(1);
+            // Ball goes out of bounds
+            if (ballX < 0) {
+                enemyScore++;
+                resetBall();
+            }
+            if (ballX > canvas.width) {
+                playerScore++;
+                resetBall();
+            }
 
-  requestAnimationFrame(tick);
-}
+            // AI move
+            if (enemyY + paddleHeight / 2 < ballY) {
+                enemyY += 4; // Speed of enemy paddle
+            } else {
+                enemyY -= 4; // Speed of enemy paddle
+            }
 
-tick();
-</script>
+            draw();
+        }
+
+        function resetBall() {
+            ballX = canvas.width / 2;
+            ballY = canvas.height / 2;
+            ballSpeedX = -ballSpeedX; // Reset direction
+        }
+
+        document.addEventListener('mousemove', (event) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseY = event.clientY - rect.top;
+            playerY = mouseY - paddleHeight / 2;
+
+            // Keep the paddle within bounds
+            if (playerY < 0) playerY = 0;
+            if (playerY + paddleHeight > canvas.height) playerY = canvas.height - paddleHeight;
+        });
+
+        function gameLoop() {
+            update();
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+    </script>
 </body>
 </html>
