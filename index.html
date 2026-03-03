@@ -1,126 +1,198 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ping Pong Game</title>
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background: #000;
-            margin: 0;
-        }
-        canvas {
-            background: #333;
-            border: 2px solid #fff;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Math Sound Console</title>
+<style>
+    body {
+        background: #000;
+        margin: 0;
+        font-family: Arial, sans-serif;
+        color: #fff;
+        overflow: hidden;
+    }
+
+    #topbar {
+        padding: 10px;
+        background: #111;
+        border-bottom: 1px solid #333;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    #label {
+        font-size: 14px;
+        color: #aaa;
+        white-space: nowrap;
+    }
+
+    #mathInput {
+        flex: 1;
+        padding: 8px;
+        background: #000;
+        border: 1px solid #444;
+        color: #0f0;
+        font-family: monospace;
+    }
+
+    #playBtn {
+        padding: 8px 18px;
+        background: #222;
+        border: 1px solid #555;
+        color: #fff;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    #playBtn:hover {
+        background: #333;
+    }
+
+    #graph {
+        width: 100vw;
+        height: calc(100vh - 60px);
+        background: #000;
+        display: block;
+    }
+</style>
 </head>
 <body>
-    <canvas id="pingPongCanvas" width="800" height="400"></canvas>
-    
-    <script>
-        const canvas = document.getElementById('pingPongCanvas');
-        const ctx = canvas.getContext('2d');
 
-        const paddleWidth = 10;
-        const paddleHeight = 100;
-        const ballSize = 10;
+<div id="topbar">
+    <div id="label">f(x) =</div>
+    <input id="mathInput">
+    <button id="playBtn">PLAY</button>
+</div>
 
-        let playerY = (canvas.height - paddleHeight) / 2;
-        let enemyY = (canvas.height - paddleHeight) / 2;
-        let ballX = canvas.width / 2;
-        let ballY = canvas.height / 2;
-        let ballSpeedX = 5;
-        let ballSpeedY = 3;
-        let playerScore = 0;
-        let enemyScore = 0;
+<canvas id="graph"></canvas>
 
-        function draw() {
-            // Clear canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+<script>
+const canvas = document.getElementById("graph");
+const ctx = canvas.getContext("2d");
+const input = document.getElementById("mathInput");
+const playBtn = document.getElementById("playBtn");
 
-            // Draw paddles
-            ctx.fillStyle = '#fff';
-            ctx.fillRect(0, playerY, paddleWidth, paddleHeight); // Player paddle
-            ctx.fillRect(canvas.width - paddleWidth, enemyY, paddleWidth, paddleHeight); // Enemy paddle
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight - 60;
+}
+resize();
+window.addEventListener("resize", resize);
 
-            // Draw ball
-            ctx.beginPath();
-            ctx.arc(ballX, ballY, ballSize, 0, Math.PI * 2);
-            ctx.fill();
+function parseFunction(expr) {
+    return new Function("x", "return " + expr + ";");
+}
 
-            // Draw scores
-            ctx.font = '20px Arial';
-            ctx.fillText(`Player: ${playerScore}`, 50, 20);
-            ctx.fillText(`Enemy: ${enemyScore}`, canvas.width - 100, 20);
+function drawAxes() {
+    ctx.strokeStyle = "#333";
+    ctx.lineWidth = 1;
+
+    // horizontal axis
+    ctx.beginPath();
+    ctx.moveTo(0, canvas.height / 2);
+    ctx.lineTo(canvas.width, canvas.height / 2);
+    ctx.stroke();
+
+    // vertical axis
+    ctx.beginPath();
+    ctx.moveTo(canvas.width / 2, 0);
+    ctx.lineTo(canvas.width / 2, canvas.height);
+    ctx.stroke();
+}
+
+function drawFunction(fn) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawAxes();
+
+    ctx.strokeStyle = "#0f0";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+
+    const scaleX = 50;   // pixels per unit x
+    const scaleY = 50;   // pixels per unit y
+
+    for (let px = 0; px < canvas.width; px++) {
+        const x = (px - canvas.width / 2) / scaleX;
+        let y;
+        try {
+            y = fn(x);
+        } catch {
+            return;
         }
+        const py = canvas.height / 2 - y * scaleY;
 
-        function update() {
-            // Move ball
-            ballX += ballSpeedX;
-            ballY += ballSpeedY;
+        if (px === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+    }
 
-            // Ball collision with top and bottom
-            if (ballY - ballSize < 0 || ballY + ballSize > canvas.height) {
-                ballSpeedY = -ballSpeedY;
-            }
+    ctx.stroke();
+}
 
-            // Ball collision with paddles
-            if (ballX < paddleWidth && ballY > playerY && ballY < playerY + paddleHeight) {
-                ballSpeedX = -ballSpeedX;
-                playerScore++;
-            }
-            if (ballX > canvas.width - paddleWidth && ballY > enemyY && ballY < enemyY + paddleHeight) {
-                ballSpeedX = -ballSpeedX;
-                enemyScore++;
-            }
+function playSound(fn) {
+    const audio = new (window.AudioContext || window.webkitAudioContext)();
+    const sampleRate = audio.sampleRate;
+    const duration = 2.0;
+    const length = sampleRate * duration;
 
-            // Ball goes out of bounds
-            if (ballX < 0) {
-                enemyScore++;
-                resetBall();
-            }
-            if (ballX > canvas.width) {
-                playerScore++;
-                resetBall();
-            }
+    const buffer = audio.createBuffer(1, length, sampleRate);
+    const data = buffer.getChannelData(0);
 
-            // AI move
-            if (enemyY + paddleHeight / 2 < ballY) {
-                enemyY += 4; // Speed of enemy paddle
-            } else {
-                enemyY -= 4; // Speed of enemy paddle
-            }
-
-            draw();
+    for (let i = 0; i < length; i++) {
+        const t = i / sampleRate;
+        const x = t * 20; // time → x mapping
+        let v;
+        try {
+            v = fn(x);
+        } catch {
+            v = 0;
         }
+        data[i] = Math.max(-1, Math.min(1, v * 0.3));
+    }
 
-        function resetBall() {
-            ballX = canvas.width / 2;
-            ballY = canvas.height / 2;
-            ballSpeedX = -ballSpeedX; // Reset direction
-        }
+    const src = audio.createBufferSource();
+    src.buffer = buffer;
+    src.connect(audio.destination);
+    src.start();
+}
 
-        document.addEventListener('mousemove', (event) => {
-            const rect = canvas.getBoundingClientRect();
-            const mouseY = event.clientY - rect.top;
-            playerY = mouseY - paddleHeight / 2;
+function updateAndPlay() {
+    const expr = input.value.trim();
+    if (!expr) return;
+    let fn;
+    try {
+        fn = parseFunction(expr);
+    } catch (e) {
+        alert("Function error: " + e.message);
+        return;
+    }
+    drawFunction(fn);
+    playSound(fn);
+}
 
-            // Keep the paddle within bounds
-            if (playerY < 0) playerY = 0;
-            if (playerY + paddleHeight > canvas.height) playerY = canvas.height - paddleHeight;
-        });
+playBtn.addEventListener("click", updateAndPlay);
 
-        function gameLoop() {
-            update();
-            requestAnimationFrame(gameLoop);
-        }
+input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+        updateAndPlay();
+    }
+});
 
-        gameLoop();
-    </script>
+// default: square-wave-ish Fourier series
+input.value = "(24/Math.PI) * ("
+    + "Math.sin(1*x)/1 + "
+    + "Math.sin(3*x)/3 + "
+    + "Math.sin(5*x)/5 + "
+    + "Math.sin(7*x)/7 + "
+    + "Math.sin(9*x)/9"
+    + ")";
+
+// initial render
+(function init() {
+    const fn = parseFunction(input.value);
+    drawFunction(fn);
+})();
+</script>
+
 </body>
 </html>
