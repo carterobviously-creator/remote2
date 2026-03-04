@@ -1,198 +1,643 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Math Sound Console</title>
+<title>ISP BlockCoder + Py CodeGen</title>
 <style>
+    :root {
+        --bg: #05060a;
+        --bg2: #0b0f1a;
+        --accent: #4af2c5;
+        --accent2: #ff4af2;
+        --text: #f5f7ff;
+        --muted: #8a90aa;
+        --danger: #ff5c7a;
+    }
+    * { box-sizing: border-box; }
     body {
-        background: #000;
         margin: 0;
-        font-family: Arial, sans-serif;
-        color: #fff;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top, #151a2b 0, #05060a 55%);
+        color: var(--text);
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+    header {
+        padding: 10px 16px;
+        background: linear-gradient(90deg, #05060a, #151a2b);
+        border-bottom: 1px solid #1b2033;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    header .title {
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-size: 13px;
+        color: var(--muted);
+    }
+    header .badge {
+        padding: 4px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(74,242,197,0.4);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--accent);
+    }
+    main {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 260px 1fr 360px;
+        gap: 8px;
+        padding: 8px;
+    }
+    .panel {
+        background: radial-gradient(circle at top left, #1a2136 0, #05060a 60%);
+        border-radius: 10px;
+        border: 1px solid #1b2033;
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.6), 0 18px 40px rgba(0,0,0,0.7);
+        display: flex;
+        flex-direction: column;
         overflow: hidden;
     }
-
-    #topbar {
-        padding: 10px;
-        background: #111;
-        border-bottom: 1px solid #333;
+    .panel-header {
+        padding: 8px 10px;
+        border-bottom: 1px solid #1b2033;
         display: flex;
-        gap: 10px;
         align-items: center;
+        justify-content: space-between;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--muted);
     }
-
-    #label {
-        font-size: 14px;
-        color: #aaa;
-        white-space: nowrap;
+    .panel-header span {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
     }
-
-    #mathInput {
-        flex: 1;
+    .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--accent);
+        box-shadow: 0 0 8px var(--accent);
+    }
+    .panel-body {
         padding: 8px;
-        background: #000;
-        border: 1px solid #444;
-        color: #0f0;
-        font-family: monospace;
+        overflow: auto;
+        font-size: 13px;
     }
-
-    #playBtn {
-        padding: 8px 18px;
-        background: #222;
-        border: 1px solid #555;
-        color: #fff;
+    /* Palette */
+    .block-palette {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .block {
+        padding: 8px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #18243a, #101524);
+        border: 1px solid #28324a;
         cursor: pointer;
-        font-weight: 600;
+        transition: transform 0.08s ease, box-shadow 0.08s ease, border-color 0.08s ease;
     }
-
-    #playBtn:hover {
-        background: #333;
+    .block:hover {
+        transform: translateY(-1px);
+        border-color: var(--accent);
+        box-shadow: 0 0 10px rgba(74,242,197,0.4);
     }
-
-    #graph {
-        width: 100vw;
-        height: calc(100vh - 60px);
-        background: #000;
-        display: block;
+    .block-title {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--accent);
+        margin-bottom: 4px;
+    }
+    .block-desc {
+        font-size: 12px;
+        color: var(--muted);
+    }
+    /* Workspace */
+    .workspace {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    .workspace-list {
+        flex: 1;
+        border-radius: 8px;
+        border: 1px dashed #28324a;
+        padding: 8px;
+        background: radial-gradient(circle at top, #151a2b 0, #05060a 70%);
+        overflow-y: auto;
+        min-height: 120px;
+    }
+    .workspace-empty {
+        font-size: 12px;
+        color: var(--muted);
+        text-align: center;
+        padding: 16px 4px;
+    }
+    .workspace-block {
+        margin-bottom: 6px;
+        padding: 8px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #1b2740, #111624);
+        border: 1px solid #28324a;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .workspace-block-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--accent2);
+    }
+    .workspace-controls {
+        display: flex;
+        gap: 4px;
+    }
+    button {
+        border: none;
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        cursor: pointer;
+        background: #151a2b;
+        color: var(--muted);
+        border: 1px solid #28324a;
+        transition: background 0.08s ease, color 0.08s ease, border-color 0.08s ease, transform 0.08s ease;
+    }
+    button:hover {
+        background: var(--accent);
+        color: #05060a;
+        border-color: var(--accent);
+        transform: translateY(-1px);
+    }
+    button.primary {
+        background: linear-gradient(135deg, var(--accent), #7bffdf);
+        color: #05060a;
+        border-color: transparent;
+    }
+    button.primary:hover {
+        background: linear-gradient(135deg, #7bffdf, var(--accent));
+    }
+    button.danger {
+        border-color: rgba(255,92,122,0.7);
+        color: var(--danger);
+    }
+    button.danger:hover {
+        background: var(--danger);
+        color: #05060a;
+    }
+    input[type="text"], textarea, select {
+        width: 100%;
+        border-radius: 6px;
+        border: 1px solid #28324a;
+        background: #05060f;
+        color: var(--text);
+        padding: 4px 6px;
+        font-size: 12px;
+        font-family: inherit;
+        resize: vertical;
+    }
+    textarea {
+        min-height: 80px;
+    }
+    label {
+        font-size: 11px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+    }
+    .workspace-footer {
+        margin-top: 6px;
+        display: flex;
+        justify-content: space-between;
+        gap: 6px;
+    }
+    /* Right panel */
+    .code-output {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        height: 100%;
+    }
+    .code-output textarea {
+        flex: 1;
+        font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+        font-size: 12px;
+        line-height: 1.4;
+        background: radial-gradient(circle at top left, #111624 0, #05060a 60%);
+    }
+    .mini-label {
+        font-size: 11px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        margin-bottom: 2px;
+    }
+    .ai-section {
+        margin-top: 6px;
+        padding-top: 6px;
+        border-top: 1px solid #1b2033;
+    }
+    .ai-row {
+        display: flex;
+        gap: 6px;
+        margin-top: 4px;
+    }
+    .ai-row textarea {
+        flex: 1;
+        min-height: 60px;
+    }
+    .ai-row button {
+        align-self: flex-start;
+    }
+    .run-output {
+        min-height: 60px;
+        border-radius: 6px;
+        border: 1px solid #28324a;
+        background: #05060f;
+        padding: 6px;
+        font-family: "JetBrains Mono", Consolas, monospace;
+        font-size: 12px;
+        color: var(--accent);
+        white-space: pre-wrap;
     }
 </style>
 </head>
 <body>
+<header>
+    <div class="title">ISP BLOCKCODER · PY CODEGEN</div>
+    <div class="badge">Single‑File · Offline · HTML Only</div>
+</header>
 
-<div id="topbar">
-    <div id="label">f(x) =</div>
-    <input id="mathInput">
-    <button id="playBtn">PLAY</button>
-</div>
+<main>
+    <!-- Palette -->
+    <section class="panel">
+        <div class="panel-header">
+            <span><span class="dot"></span>BLOCK PALETTE</span>
+            <span>Click to add</span>
+        </div>
+        <div class="panel-body">
+            <div class="block-palette">
+                <div class="block" data-block-type="print">
+                    <div class="block-title">PRINT</div>
+                    <div class="block-desc">Output a line using <code>print()</code>.</div>
+                </div>
+                <div class="block" data-block-type="assign">
+                    <div class="block-title">SET VARIABLE</div>
+                    <div class="block-desc">Assign a value to a variable.</div>
+                </div>
+                <div class="block" data-block-type="loop">
+                    <div class="block-title">FOR LOOP</div>
+                    <div class="block-desc">Repeat a block of code a number of times.</div>
+                </div>
+                <div class="block" data-block-type="if">
+                    <div class="block-title">IF CONDITION</div>
+                    <div class="block-desc">Run code only if a condition is true.</div>
+                </div>
+                <div class="block" data-block-type="blank">
+                    <div class="block-title">RAW PYTHON</div>
+                    <div class="block-desc">Insert a custom Python line.</div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-<canvas id="graph"></canvas>
+    <!-- Workspace -->
+    <section class="panel">
+        <div class="panel-header">
+            <span><span class="dot"></span>WORKSPACE</span>
+            <span>Block program</span>
+        </div>
+        <div class="panel-body">
+            <div id="workspace" class="workspace">
+                <div id="workspaceList" class="workspace-list">
+                    <div class="workspace-empty">No blocks yet. Click a block on the left to add it here.</div>
+                </div>
+                <div class="workspace-footer">
+                    <button id="clearWorkspace" class="danger">Clear</button>
+                    <button id="generateCode" class="primary">Generate Python Code</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Code + AI -->
+    <section class="panel">
+        <div class="panel-header">
+            <span><span class="dot"></span>PYTHON CODEGEN</span>
+            <span>Text + AI‑style</span>
+        </div>
+        <div class="panel-body">
+            <div class="code-output">
+                <div>
+                    <div class="mini-label">Generated Python code</div>
+                    <textarea id="codeOutput" spellcheck="false"></textarea>
+                </div>
+                <div>
+                    <div class="mini-label">Simulated run output (preview only)</div>
+                    <div id="runOutput" class="run-output">No code generated yet.</div>
+                </div>
+                <div class="ai-section">
+                    <div class="mini-label">AI CodeGen prompt (text → Python snippet)</div>
+                    <div class="ai-row">
+                        <textarea id="aiPrompt" placeholder="Example: loop 5 times and print hello"></textarea>
+                        <button id="aiGenerate" class="primary">AI CodeGen</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
 
 <script>
-const canvas = document.getElementById("graph");
-const ctx = canvas.getContext("2d");
-const input = document.getElementById("mathInput");
-const playBtn = document.getElementById("playBtn");
+(function() {
+    const paletteBlocks = document.querySelectorAll('.block');
+    const workspaceList = document.getElementById('workspaceList');
+    const clearWorkspaceBtn = document.getElementById('clearWorkspace');
+    const generateCodeBtn = document.getElementById('generateCode');
+    const codeOutput = document.getElementById('codeOutput');
+    const runOutput = document.getElementById('runOutput');
+    const aiPrompt = document.getElementById('aiPrompt');
+    const aiGenerateBtn = document.getElementById('aiGenerate');
 
-function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight - 60;
-}
-resize();
-window.addEventListener("resize", resize);
+    function ensureNotEmpty() {
+        if (!workspaceList.querySelector('.workspace-block')) {
+            workspaceList.innerHTML = '<div class="workspace-empty">No blocks yet. Click a block on the left to add it here.</div>';
+        }
+    }
 
-function parseFunction(expr) {
-    return new Function("x", "return " + expr + ";");
-}
+    function addWorkspaceBlock(type) {
+        if (workspaceList.querySelector('.workspace-empty')) {
+            workspaceList.innerHTML = '';
+        }
 
-function drawAxes() {
-    ctx.strokeStyle = "#333";
-    ctx.lineWidth = 1;
+        const block = document.createElement('div');
+        block.className = 'workspace-block';
+        block.dataset.blockType = type;
 
-    // horizontal axis
-    ctx.beginPath();
-    ctx.moveTo(0, canvas.height / 2);
-    ctx.lineTo(canvas.width, canvas.height / 2);
-    ctx.stroke();
+        const header = document.createElement('div');
+        header.className = 'workspace-block-header';
 
-    // vertical axis
-    ctx.beginPath();
-    ctx.moveTo(canvas.width / 2, 0);
-    ctx.lineTo(canvas.width / 2, canvas.height);
-    ctx.stroke();
-}
+        const title = document.createElement('span');
+        title.textContent = blockTitle(type);
 
-function drawFunction(fn) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawAxes();
+        const controls = document.createElement('div');
+        controls.className = 'workspace-controls';
 
-    ctx.strokeStyle = "#0f0";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
+        const upBtn = document.createElement('button');
+        upBtn.textContent = '↑';
+        upBtn.title = 'Move up';
+        upBtn.addEventListener('click', () => {
+            const prev = block.previousElementSibling;
+            if (prev) workspaceList.insertBefore(block, prev);
+        });
 
-    const scaleX = 50;   // pixels per unit x
-    const scaleY = 50;   // pixels per unit y
+        const downBtn = document.createElement('button');
+        downBtn.textContent = '↓';
+        downBtn.title = 'Move down';
+        downBtn.addEventListener('click', () => {
+            const next = block.nextElementSibling;
+            if (next) workspaceList.insertBefore(next, block);
+        });
 
-    for (let px = 0; px < canvas.width; px++) {
-        const x = (px - canvas.width / 2) / scaleX;
-        let y;
-        try {
-            y = fn(x);
-        } catch {
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = '✕';
+        deleteBtn.classList.add('danger');
+        deleteBtn.title = 'Delete block';
+        deleteBtn.addEventListener('click', () => {
+            block.remove();
+            ensureNotEmpty();
+        });
+
+        controls.appendChild(upBtn);
+        controls.appendChild(downBtn);
+        controls.appendChild(deleteBtn);
+
+        header.appendChild(title);
+        header.appendChild(controls);
+
+        const body = document.createElement('div');
+
+        body.appendChild(buildInputsForType(type));
+
+        block.appendChild(header);
+        block.appendChild(body);
+
+        workspaceList.appendChild(block);
+    }
+
+    function blockTitle(type) {
+        switch (type) {
+            case 'print': return 'PRINT';
+            case 'assign': return 'SET VARIABLE';
+            case 'loop': return 'FOR LOOP';
+            case 'if': return 'IF CONDITION';
+            case 'blank': return 'RAW PYTHON';
+            default: return 'BLOCK';
+        }
+    }
+
+    function buildInputsForType(type) {
+        const container = document.createElement('div');
+        container.style.display = 'flex';
+        container.style.flexDirection = 'column';
+        container.style.gap = '4px';
+
+        function addField(labelText, placeholder) {
+            const wrapper = document.createElement('div');
+            const label = document.createElement('label');
+            label.textContent = labelText;
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = placeholder || '';
+            wrapper.appendChild(label);
+            wrapper.appendChild(input);
+            container.appendChild(wrapper);
+            return input;
+        }
+
+        if (type === 'print') {
+            addField('Text', 'Hello, world!');
+        } else if (type === 'assign') {
+            addField('Variable name', 'x');
+            addField('Value (Python expression)', '42');
+        } else if (type === 'loop') {
+            addField('Loop variable', 'i');
+            addField('Times (integer)', '5');
+            const inner = addField('Inner text (print each time)', 'Loop iteration');
+            inner.placeholder = 'Optional: text to print inside loop';
+        } else if (type === 'if') {
+            addField('Condition (Python expression)', 'x > 0');
+            addField('Inner text (print if true)', 'x is positive');
+        } else if (type === 'blank') {
+            const label = document.createElement('label');
+            label.textContent = 'Python line';
+            const ta = document.createElement('textarea');
+            ta.placeholder = 'e.g. total = x + y';
+            container.appendChild(label);
+            container.appendChild(ta);
+        }
+
+        return container;
+    }
+
+    function generatePythonFromWorkspace() {
+        const blocks = workspaceList.querySelectorAll('.workspace-block');
+        if (!blocks.length) {
+            codeOutput.value = '';
+            runOutput.textContent = 'No blocks to generate.';
             return;
         }
-        const py = canvas.height / 2 - y * scaleY;
 
-        if (px === 0) ctx.moveTo(px, py);
-        else ctx.lineTo(px, py);
+        let codeLines = [];
+        codeLines.push('# Generated by ISP BlockCoder');
+        codeLines.push('def main():');
+
+        blocks.forEach(block => {
+            const type = block.dataset.blockType;
+            const inputs = block.querySelectorAll('input, textarea');
+
+            if (type === 'print') {
+                const text = (inputs[0].value || '').replace(/"/g, '\\"');
+                codeLines.push(`    print("${text}")`);
+            } else if (type === 'assign') {
+                const name = inputs[0].value || 'x';
+                const value = inputs[1].value || '0';
+                codeLines.push(`    ${name} = ${value}`);
+            } else if (type === 'loop') {
+                const varName = inputs[0].value || 'i';
+                const times = inputs[1].value || '5';
+                const innerText = (inputs[2].value || '').replace(/"/g, '\\"');
+                codeLines.push(`    for ${varName} in range(${times}):`);
+                if (innerText.trim()) {
+                    codeLines.push(`        print("${innerText}", ${varName})`);
+                } else {
+                    codeLines.push('        pass');
+                }
+            } else if (type === 'if') {
+                const cond = inputs[0].value || 'True';
+                const innerText = (inputs[1].value || '').replace(/"/g, '\\"');
+                codeLines.push(`    if ${cond}:`);
+                if (innerText.trim()) {
+                    codeLines.push(`        print("${innerText}")`);
+                } else {
+                    codeLines.push('        pass');
+                }
+            } else if (type === 'blank') {
+                const line = inputs[0].value || '';
+                if (line.trim()) {
+                    codeLines.push('    ' + line);
+                }
+            }
+        });
+
+        codeLines.push('');
+        codeLines.push('if __name__ == "__main__":');
+        codeLines.push('    main()');
+
+        const code = codeLines.join('\n');
+        codeOutput.value = code;
+
+        // Simulated run: we only interpret print lines in a very simple way
+        const preview = simulateRun(codeLines);
+        runOutput.textContent = preview;
     }
 
-    ctx.stroke();
-}
-
-function playSound(fn) {
-    const audio = new (window.AudioContext || window.webkitAudioContext)();
-    const sampleRate = audio.sampleRate;
-    const duration = 2.0;
-    const length = sampleRate * duration;
-
-    const buffer = audio.createBuffer(1, length, sampleRate);
-    const data = buffer.getChannelData(0);
-
-    for (let i = 0; i < length; i++) {
-        const t = i / sampleRate;
-        const x = t * 20; // time → x mapping
-        let v;
-        try {
-            v = fn(x);
-        } catch {
-            v = 0;
+    function simulateRun(codeLines) {
+        // This is NOT a real Python interpreter.
+        // We just look for lines like: print("text") or print("text", var)
+        let output = [];
+        for (const line of codeLines) {
+            const trimmed = line.trim();
+            if (trimmed.startsWith('print(')) {
+                const inside = trimmed.slice(6, -1);
+                // Very naive: split by comma, remove quotes
+                const parts = inside.split(',');
+                const rendered = parts.map(p => p.trim().replace(/^"(.*)"$/, '$1'));
+                output.push(rendered.join(' '));
+            }
         }
-        data[i] = Math.max(-1, Math.min(1, v * 0.3));
+        if (!output.length) {
+            return 'Preview: no print() output detected. Code generated successfully.';
+        }
+        return output.join('\n');
     }
 
-    const src = audio.createBufferSource();
-    src.buffer = buffer;
-    src.connect(audio.destination);
-    src.start();
-}
+    function aiGeneratePython(prompt) {
+        const p = prompt.toLowerCase();
+        let lines = [];
+        lines.push('# AI CodeGen snippet');
+        if (!p.trim()) {
+            lines.push('print("Describe what you want in the AI prompt.")');
+            return lines.join('\n');
+        }
 
-function updateAndPlay() {
-    const expr = input.value.trim();
-    if (!expr) return;
-    let fn;
-    try {
-        fn = parseFunction(expr);
-    } catch (e) {
-        alert("Function error: " + e.message);
-        return;
+        if (p.includes('loop') || p.includes('repeat')) {
+            const timesMatch = p.match(/(\d+)/);
+            const times = timesMatch ? timesMatch[1] : '5';
+            lines.push(`for i in range(${times}):`);
+            if (p.includes('hello')) {
+                lines.push('    print("hello", i)');
+            } else {
+                lines.push('    print("loop iteration", i)');
+            }
+        } else if (p.includes('input')) {
+            lines.push('name = input("Enter your name: ")');
+            lines.push('print("Hello,", name)');
+        } else if (p.includes('sum') || p.includes('add')) {
+            lines.push('numbers = [1, 2, 3, 4, 5]');
+            lines.push('total = sum(numbers)');
+            lines.push('print("Total:", total)');
+        } else if (p.includes('file')) {
+            lines.push('with open("output.txt", "w") as f:');
+            lines.push('    f.write("Hello from AI CodeGen!\\n")');
+            lines.push('print("Wrote output.txt")');
+        } else {
+            lines.push('print("AI CodeGen could not match a pattern, but your prompt was:")');
+            lines.push(`print(${JSON.stringify(prompt)})`);
+        }
+        return lines.join('\n');
     }
-    drawFunction(fn);
-    playSound(fn);
-}
 
-playBtn.addEventListener("click", updateAndPlay);
+    // Event wiring
+    paletteBlocks.forEach(el => {
+        el.addEventListener('click', () => {
+            const type = el.dataset.blockType;
+            addWorkspaceBlock(type);
+        });
+    });
 
-input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-        updateAndPlay();
-    }
-});
+    clearWorkspaceBtn.addEventListener('click', () => {
+        workspaceList.innerHTML = '<div class="workspace-empty">No blocks yet. Click a block on the left to add it here.</div>';
+        codeOutput.value = '';
+        runOutput.textContent = 'Workspace cleared.';
+    });
 
-// default: square-wave-ish Fourier series
-input.value = "(24/Math.PI) * ("
-    + "Math.sin(1*x)/1 + "
-    + "Math.sin(3*x)/3 + "
-    + "Math.sin(5*x)/5 + "
-    + "Math.sin(7*x)/7 + "
-    + "Math.sin(9*x)/9"
-    + ")";
+    generateCodeBtn.addEventListener('click', generatePythonFromWorkspace);
 
-// initial render
-(function init() {
-    const fn = parseFunction(input.value);
-    drawFunction(fn);
+    aiGenerateBtn.addEventListener('click', () => {
+        const snippet = aiGeneratePython(aiPrompt.value || '');
+        const existing = codeOutput.value.trim();
+        codeOutput.value = existing ? (existing + '\n\n' + snippet) : snippet;
+        runOutput.textContent = 'AI CodeGen snippet appended to Python code.';
+    });
+
+    ensureNotEmpty();
 })();
 </script>
-
 </body>
 </html>
