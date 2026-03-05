@@ -2,272 +2,237 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>ISPWin 12 Pro – Bootloader</title>
+<title>ISPWin 12 Pro – Bootloader + Demo Desktop</title>
 <style>
-/*------------------------------------------------------
-  Global variables & reset
-------------------------------------------------------*/
+/*─────────────────────────────────────────────────────
+  1. CSS VARIABLES & GLOBAL S‑T‑Y‑L‑E
+  ──────────────────────────────────────────────────────*/
 :root{
-  --color-dark:#0a0a1a;
-  --color-neon:#0fffb5;
-  --color-link:#b50fff;
-  --color-magenta:#ff0fb5;
-  --color-text:#e0e0ff;
-  --color-bg:#001335;
+  /* ANSI‑style neon colors */
+  --c-dark:#0a0a1a;
+  --c-bg:#001336;
+  --c-text:#c0c0ff;
+  --c-lt:#0fffb5;
+  --c-dp:#b50fff;
+  --c-mg:#ff0fb5;
 }
+*{margin:0;padding:0;box-sizing:border-box;}
+html{height:100%;overflow:hidden;font-family:'Consolas','Monaco','Menlo','Courier',monospace;}
+body{height:100%;background:var(--c-bg);color:var(--c-text);overflow:hidden;}
+.hidden{display:none;}
+/*─────────────────────────────────────────────────────
+  2. BOOTLOADER – POST / BIOS / LOGO / READY
+  ──────────────────────────────────────────────────────*/
+#bootloader{position:relative;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;background:var(--c-bg);color:var(--c-text);}
+.phase{position:absolute;inset:0;visibility:hidden;opacity:0;transition:opacity .6s ease;}
+.phase.active{visibility:visible;opacity:1;}
+#post{background:rgba(0,0,0,.7);border-radius:8px;padding:20px 30px;position:relative;overflow:hidden;box-shadow:0 0 10px rgba(0,0,0,.7);}
+#post::before{content:"";position:absolute;inset:0;background:radial-gradient(circle,#001336,#000);opacity:.5;z-index:-1;}
+#postText{white-space:pre-wrap;}
+#logo{display:flex;flex-direction:column;align-items:center;color:var(--c-lt);text-align:center;}
+#logoMain{width:160px;height:160px;border-radius:50%;border:6px solid var(--c-lt);box-shadow:0 0 15px 5px var(--c-lt),0 0 30px 10px var(--c-mg);display:flex;align-items:center;justify-content:center;font-size:1.2rem;background:radial-gradient(circle at 50% 30%,#000000,#001336);margin-bottom:15px;}
+#progressBar{width:80%;max-width:400px;height:12px;background:#111;border-radius:6px;overflow:hidden;margin:15px 0;box-shadow:inset 0 0 5px 0 rgba(0,0,0,.5);}
+#progress{width:0;height:100%;background:linear-gradient(90deg,var(--c-lt),var(--c-mg));}
+#loadStatus{font-size:1rem;color:var(--c-dp);min-height:1.4rem;}
+#ready{font-size:1.1rem;text-align:center;}
+#ready h1{font-size:1.8rem;color:var(--c-lt);margin-bottom:1.5rem;}
+#startBtn{font-family:inherit;padding:12px 24px;font-size:1.2rem;border:none;border-radius:6px;background:var(--c-lt);color:var(--c-dark);cursor:pointer;transition:background .3s;}
+#startBtn:hover{background:var(--c-mg);}
+#launch{font-size:1.8rem;text-align:center;color:var(--c-mg);}
 
-/* fullscreen, typewriter font for console */
-body{
-  margin:0;
-  height:100vh;
-  background: radial-gradient(circle at 50% 50%, #001440 0%, #001336 35%, #001223 100%);
-  color:var(--color-text);
-  font-family:'Segoe UI','Consolas',monospace;
-  overflow:hidden;
-  position:relative;
-}
-
-/*------------------------------------------------------
-  Boot phases (hidden by default)
-------------------------------------------------------*/
-.phase{
-  position:absolute;
-  inset:0;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  visibility:hidden;
-  opacity:0;
-  transition:opacity .6s ease;
-}
-
-/* when a phase is “active” it becomes visible */
-.phase.active{visibility:visible; opacity:1;}
-
-/*------------------------------------------------------
-  Phase 1 – POST / BIOS
-------------------------------------------------------*/
-#post{
-  background:rgba(0,0,0,.8);
-  padding:20px 30px;
-  border-radius:8px;
-  text-align:left;
-  width:90%; max-width:600px;
-  overflow:hidden;
-  position:relative;
-}
-
-/* glow of scan‑lines */
-#post::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  background: repeating-linear-gradient(-45deg,rgba(255,255,255,.1),rgba(255,255,255,.1) 2px,transparent 2px,transparent 4px);
-  pointer-events:none;
-  opacity:.5;
-}
-
-/* The actual console output */
-#postText{min-height:3.5em;}
-
-/*------------------------------------------------------
-  Phase 2 – Boot logo
-------------------------------------------------------*/
-#logo{
-  text-align:center;
-  color:var(--color-neon);
-}
-#logoMain{
-  width:180px;
-  height:180px;
-  border-radius:50%;
-  border:6px solid var(--color-neon);
-  box-shadow:0 0 15px 5px var(--color-neon), 0 0 30px 10px var(--color-magenta);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  font-size:1.2rem;
-  background: radial-gradient(circle at 50% 30%, #000000, #001336);
-  margin-bottom:15px;
-}
-
-/* progress bar wrapper */
-#progressWrapper{
-  width:80%; max-width:400px;
-  height:12px;
-  background:#111;
-  border-radius:6px;
-  margin:15px 0;
-  overflow:hidden;
-  box-shadow:inset 0 0 5px rgba(0,0,0,.5);
-}
-
-/* actual bar */
-#progress{height:100%; width:0%; background:linear-gradient(90deg,var(--color-neon),var(--color-magenta));}
-@keyframes progressAnim{0%{width:0%;}100%{width:100%;}}
-
-/* rotating status */
-#status{color:var(--color-link); font-size:1rem; min-height:1.4rem;}
-
-/*------------------------------------------------------
-  Phase 4 – Ready screen
-------------------------------------------------------*/
-#ready{
-  text-align:center;
-  font-size:1.1rem;
-}
-#ready h1{
-  margin:0 0 1.5rem;
-  font-size:1.8rem;
-  color:var(--color-neon);
-}
-#startBtn{
-  font-family:inherit;
-  padding:12px 24px;
-  font-size:1.2rem;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
-  background:var(--color-neon);
-  color:var(--color-dark);
-  transition:background .3s ease;
-}
-#startBtn:hover{background:var(--color-magenta);}
-
-/*------------------------------------------------------
-  Phase 5 – Launching message
-------------------------------------------------------*/
-#launch{
-  text-align:center;
-  font-size:1.8rem;
-  color:var(--color-magenta);
-}
+/*─────────────────────────────────────────────────────
+  3. DEMO DESKTOP – STARTUP UI
+  ──────────────────────────────────────────────────────*/
+#desktop{position:relative;inset:0;background:linear-gradient(180deg,#001336,#000000);overflow:hidden;}
+/* icons */
+.desktop-icons{position:absolute;top:60px;left:20px;display:flex;gap:15px;z-index:1;}
+.icon{display:flex;flex-direction:column;align-items:center;font-size:1rem;cursor:pointer;color:var(--c-text);}
+.icon img{width:64px;height:64px;border-radius:12px;border:2px solid var(--c-dark);margin-bottom:5px;}
+/* taskbar */
+.taskbar{position:absolute;bottom:0;left:0;right:0;height:50px;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:space-between;padding:0 15px;backdrop-filter:blur(4px);}
+.taskbar .start{font-size:1.5rem;cursor:pointer;color:var(--c-lt);}
+.taskbar .tray{display:flex;gap:10px;align-items:center;color:var(--c-text);}
+.taskbar .tray .status{font-size:.9rem;}
+/* windows */
+.window{position:absolute;top:100px;left:100px;width:400px;height:300px;background:rgba(255,255,255,.1);border-radius:8px;box-shadow:0 0 15px rgba(0,0,0,.5);display:flex;flex-direction:column;border:1px solid var(--c-dark);backdrop-filter:blur(6px);}
+.window-title{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:rgba(0,0,0,.3);border-bottom:1px solid var(--c-dark);cursor:move;color:var(--c-text);}
+.window-title span{font-size:.95rem;}
+.window-buttons{display:flex;gap:8px;}
+.window-buttons button{width:16px;height:16px;border:none;background:transparent;color:var(--c-text);cursor:pointer;position:relative;}
+.window-buttons button:hover{color:var(--c-mg);}
+.window-content{flex:1;padding:10px;overflow:auto;background:rgba(0,0,0,.2);}
+.minimized{display:none;}
+/* animation for progress bar */
+@keyframes prog{0%{width:0%}100%{width:100%}}
 </style>
 </head>
 <body>
-
+<!-- ##### BOOTLOADER ######################################################### -->
 <div id="bootloader">
-
-  <!-- 1. POST screen -->
-  <div id="post" class="phase" data-phase="post">
-    <div id="postText"></div>
+  <div id="post" class="phase" data-p="post"><div id="postText"></div></div>
+  <div id="logo" class="phase" data-p="logo"><div id="logoMain">ISPWin12Pro</div>
+    <div id="progressBar"><div id="progress"></div></div>
+    <div id="loadStatus"></div>
   </div>
-
-  <!-- 2. Logo + progress -->
-  <div id="logo" class="phase" data-phase="logo">
-    <div id="logoMain">ISPWin 12 Pro</div>
-    <div id="progressWrapper"><div id="progress"></div></div>
-    <div id="status"></div>
-  </div>
-
-  <!-- 3. Ready -->
-  <div id="ready" class="phase" data-phase="ready">
-    <h1>ISPWin 12 Pro is ready.</h1>
+  <div id="ready" class="phase" data-p="ready"><h1>ISPWin 12 Pro is ready.</h1>
     <button id="startBtn">Start ISPWin 12 Pro</button>
   </div>
-
-  <!-- 4. Launching message -->
-  <div id="launch" class="phase" data-phase="launch">
-    <h1>Launching desktop…</h1>
-  </div>
-
+  <div id="launch" class="phase" data-p="launch"><h1>Launching desktop…</h1></div>
 </div>
 
+<!-- ##### DEMO DESKTOP ###################################################### -->
+<div id="desktop" class="hidden">
+  <!-- taskbar -->
+  <div class="taskbar"><span class="start">ISPWin 12 Pro</span>
+    <div class="tray"><span class="time">10:00 AM</span><span class="status">Wi‑Fi: Connected</span></div>
+  </div>
+  <!-- icons -->
+  <div class="desktop-icons">
+     <div class="icon" data-app="browser"><img src="data:image/svg+xml;base64,PHN2ZyBoZWlnaHQ9IjI1IGhlaWdodD0iMjUiIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjZjBmMDAwIi8+PHJlY3Qgd2lkdGg9IjE4IiBoZWlnaHQ9IjE4IiBmaWxsPSIjZDJlbDAwIiB4PSI4IiB5PSI4IiByeD0iNyIgclk9IjciIHJlcG9ydGl3YXRpbyIgZmlsbD0ibm9uZT4iIC8+PC9zdmc+" alt="Browser"> Browser</div>
+     <div class="icon" data-app="files"><img src="data:image/svg+xml;base64,PHN2ZyBoZWlnaHQ9IjI1IGhlaWdodD0iMjUiIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjZTRjZDAwIi8+PHJlY3Qgd2lkdGg9IjE0IiBoZWlnaHQ9IjE4IiBmaWxsPSIjY2NjY2NjIiByPSI3IiB5PSI3IiByeD0iNSIgclk9IjUiIHJlcG9ydElkPSJmb29kIiBmaWxsPSJub25lIiBzdHJva2U9IiM3Nzc3NyIgZmlsbD0ibm9uZT4iIC8+PC9zdmc+" alt="Files"> Files</div>
+     <div class="icon" data-app="settings"><img src="data:image/svg+xml;base64,PHN2ZyBoZWlnaHQ9IjI1IGhlaWdodD0iMjUiIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjNTRlNTgwIi8+PHJlY3Qgd2lkdGg9IjE4IiBoZWlnaHQ9IjEiIHg9IjE3IiB5PSIzIiByeD0iNCIgZmlsbD0ibm9uZT4iIC8+PC9zdmc+" alt="Settings"> Settings</div>
+  </div>
+</div>
+
+<!-- ##### JAVASCRIPT ######################################################### -->
 <script>
-/*------------------------------------------------------
-  Helper functions
-------------------------------------------------------*/
-const delay = ms => new Promise(r => setTimeout(r, ms));
+/*----------------------------------------------------
+  Global state
+----------------------------------------------------*/
+let currentZ = 4; // windows start on top
+const windows = {}; // opened windows
 
-/*------------------------------------------------------
-  POST typing effect
-------------------------------------------------------*/
-const postLines = [
-  'ISP Firmware v3.9.1',
-  'Initializing system memory… OK',
-  'Detecting storage devices… OK',
-  'Loading ISPWin 12 Pro kernel…',
-  'Starting graphical subsystem…',
-];
+/*----------------------------------------------------
+  UTIL FUNCTIONS
+----------------------------------------------------*/
+function $id(id){return document.getElementById(id);}
 
-async function typeLines(lines, lineDelay = 800, charDelay = 70) {
-  const postText = document.getElementById('postText');
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    for (let j = 0; j < line.length; j++) {
-      postText.innerHTML += line[j];
-      await delay(charDelay);
-    }
-    postText.innerHTML += '<br>';
-    await delay(lineDelay);
-  }
+/*----------------------------------------------------
+  BOOTLOADER PHASE HANDLING
+----------------------------------------------------*/
+function switchPhase(p){
+  document.querySelectorAll('.phase').forEach(el=>{
+    el.classList.toggle('active', el.dataset.p===p);
+  });
 }
 
-/*------------------------------------------------------
-  Phase management
-------------------------------------------------------*/
-function showPhase(id) {
-  document.querySelectorAll('.phase').forEach(el => el.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-
-/*------------------------------------------------------
-  Boot sequence
-------------------------------------------------------*/
-async function runBoot() {
-  showPhase('post');          // start with the POST screen
-  await typeLines(postLines); // simulate typing text
-  startLogo();                // move to boot logo
-}
-
-/*------------------------------------------------------
-  Logo + loading animation
-------------------------------------------------------*/
-function startLogo() {
-  showPhase('logo');
-
-  /* start progress bar animation */
-  const progress = document.getElementById('progress');
-  progress.style.animation = 'progressAnim 5s linear forwards';
-
-  /* rotating status texts */
-  const statusMsgs = [
-    'Preparing desktop environment…',
-    'Mounting user profile…',
-    'Starting ISPWin services…',
+/*----------------------------------------------------
+  POST TEXT ANIMATION
+----------------------------------------------------*/
+async function typePOST(){
+  const lines = [
+    'ISP Firmware v3.9.1',
+    'Initializing system memory… OK',
+    'Detecting storage devices… OK',
+    'Loading ISPWin 12 Pro kernel…',
+    'Starting graphical subsystem…'
   ];
-  let idx = 0;
-  const statusTimer = setInterval(() => {
-    document.getElementById('status').textContent = statusMsgs[idx++];
-    if (idx >= statusMsgs.length) idx = 0;
-  }, 1200);
-
-  /* after progress finishes go to ready screen */
-  setTimeout(() => {
-    clearInterval(statusTimer);
-    showPhase('ready');
-  }, 5000); // matches progressAnim duration
+  const out = $id('postText');
+  for(const text of lines){
+    for(let i=0;i<text.length;i++){
+      out.innerHTML += text[i];
+      await new Promise(r=>setTimeout(r,70));
+    }
+    out.innerHTML += '<br>';
+    await new Promise(r=>setTimeout(r,900));
+  }
+  // after POST finish fade to logo
+  setTimeout(()=>{switchPhase('logo');startLogo();},1000);
 }
 
-/*------------------------------------------------------
-  Launch button
-------------------------------------------------------*/
-document.getElementById('startBtn').addEventListener('click', () => {
-  showPhase('launch');
-  // after a couple of seconds we can hide the entire loader
-  setTimeout(() => {
-    document.getElementById('bootloader').style.display = 'none';
-    /*  Here you would load the real ISPWin desktop
-        e.g., location.href='ispwin-desktop.html' */
-  }, 2000);
+/*----------------------------------------------------
+  LOGO + LOADING BAR
+----------------------------------------------------*/
+function startLogo(){
+  const prog = $id('progress');
+  prog.style.animation = 'prog 5s linear forwards';
+  const msgs=['Preparing desktop environment…','Mounting user profile…','Starting ISPWin services…'];
+  let m=0;
+  const status=$id('loadStatus');
+  const timer=setInterval(()=>{status.textContent=msgs[m%msgs.length];m++;},1200);
+  setTimeout(()=>{
+    clearInterval(timer);
+    switchPhase('ready');
+  },5200);
+}
+
+/*----------------------------------------------------
+  READY SCREEN
+----------------------------------------------------*/
+$('[id=startBtn]').addEventListener('click',()=>{
+  switchPhase('launch');
+  setTimeout(()=>{
+    $id('bootloader').classList.add('hidden');
+    $id('desktop').classList.remove('hidden');
+  },1500);
 });
 
-/*------------------------------------------------------
-  Begin the whole thing once page is ready
-------------------------------------------------------*/
-runBoot();
+/*----------------------------------------------------
+  DESKTOP – ICONS & WINDOW SPAWN
+----------------------------------------------------*/
+document.querySelectorAll('.icon').forEach(icon=>{
+  icon.addEventListener('click',()=>createWindow(icon.dataset.app));
+});
 
+/* createWindow(appName) – create a draggable window*/
+function createWindow(app){
+  if(windows[app]){bringToFront(windows[app].el);return;}
+  const win = document.createElement('div');
+  win.className='window';
+  win.style.top = '80px';
+  win.style.left = '80px';
+  win.style.zIndex = currentZ++;
+
+  /* title bar */
+  const title=document.createElement('div'); title.className='window-title';
+  const label=document.createElement('span'); label.textContent=app.charAt(0).toUpperCase()+app.slice(1);
+  const buttons=document.createElement('div'); buttons.className='window-buttons';
+  const btnMin=document.createElement('button'); btnMin.innerHTML='—'; btnMin.title='Minimize';
+  const btnMax=document.createElement('button'); btnMax.innerHTML='□'; btnMax.title='Maximize';
+  const btnClose=document.createElement('button'); btnClose.innerHTML='✕'; btnClose.title='Close';
+  buttons.append(btnMin,btnMax,btnClose);
+  title.append(label,buttons);
+  win.append(title);
+  /* content placeholder */
+  const cont=document.createElement('div');cont.className='window-content';
+  cont.textContent=`${app.charAt(0).toUpperCase()+app.slice(1)} loading…`;
+  win.append(cont);
+  $id('desktop').append(win);
+
+  /* events */
+  bringToFront(win);
+  title.addEventListener('mousedown',e=>onDrag(e,win));
+  btnClose.addEventListener('click',()=>{win.remove(); delete windows[app];});
+  btnMin.addEventListener('click',()=>{cont.style.display='none';});
+  btnMax.addEventListener('click',()=>{if(win.classList.contains('maximized')){win.classList.remove('maximized');win.style.top='80px';win.style.left='80px';win.style.width='400px';win.style.height='300px';}else{win.classList.add('maximized');win.style.top='0';win.style.left='0';win.style.width='100%';win.style.height='calc(100% - 50px)';}});
+
+  // Store reference
+  windows[app]={el:win,content:cont};
+}
+
+/* bring window to front */
+function bringToFront(el){
+  el.style.zIndex = ++currentZ;
+}
+
+/* drag handler */
+function onDrag(e,el){
+  e.preventDefault();
+  let startX=e.clientX, startY=e.clientY;
+  const origX=el.offsetLeft, origY=el.offsetTop;
+
+  function onMove(m){
+    const dx=m.clientX-startX, dy=m.clientY-startY;
+    el.style.left = `${origX+dx}px`;
+    el.style.top  = `${origY+dy}px`;
+  }
+  function onUp(){window.removeEventListener('mousemove',onMove);window.removeEventListener('mouseup',onUp);}
+  window.addEventListener('mousemove',onMove);
+  window.addEventListener('mouseup',onUp);
+}
+
+/* start bootloader on load */
+window.addEventListener('load',() =>{switchPhase('post');typePOST();});
 </script>
 </body>
 </html>
