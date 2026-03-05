@@ -1,1010 +1,363 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>BlockCoderForge</title>
-  <style>
-    :root {
-      --bg-primary: #0a0a0f;
-      --bg-secondary: #12121c;
-      --text-primary: #ffffff;
-      --accent-neon-blue: #00e5ff;
-      --accent-neon-green: #39ff14;
-      --accent-neon-purple: #aa00ff;
-      --border-color: #333366;
-    }
-    
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      height: 100vh;
-      display: flex;
-      overflow: hidden;
-    }
-    
-    .container {
-      display: flex;
-      width: 100%;
-      height: 100%;
-    }
-    
-    /* Palette */
-    .palette {
-      width: 250px;
-      background-color: var(--bg-secondary);
-      border-right: 1px solid var(--border-color);
-      overflow-y: auto;
-      padding: 16px;
-      box-sizing: border-box;
-      position: relative;
-    }
-    
-    .palette-header {
-      font-size: 1.2em;
-      font-weight: bold;
-      margin-bottom: 16px;
-      color: var(--accent-neon-blue);
-      text-shadow: 0 0 8px rgba(0, 229, 255, 0.3);
-    }
-    
-    .section {
-      margin-bottom: 16px;
-      border-bottom: 1px solid var(--border-color);
-      padding-bottom: 8px;
-    }
-    
-    .section-title {
-      font-size: 0.9em;
-      color: #55d2ff;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-    }
-    
-    .section-title::before {
-      content: "";
-      width: 6px;
-      height: 6px;
-      background-color: var(--accent-neon-blue);
-      border-radius: 50%;
-      margin-right: 8px;
-    }
-    
-    .block {
-      padding: 12px;
-      margin-bottom: 8px;
-      cursor: grab;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background-color: #1e1e2d;
-      border-radius: 6px;
-      transition: all 0.2s ease;
-      box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.3), 0 4px 8px rgba(0, 0, 0, 0.1);
-      position: relative;
-    }
-    
-    .block:hover {
-      background-color: #2a2a45;
-      transform: translateY(-2px);
-      box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.3), 0 6px 12px rgba(0, 0, 0, 0.15);
-    }
-    
-    .block::before {
-      content: "";
-      position: absolute;
-      top: -4px;
-      left: -4px;
-      right: -4px;
-      bottom: -4px;
-      border-radius: 8px;
-      background: linear-gradient(45deg, rgba(0,229,255,0.3), rgba(57,255,20,0.3));
-      pointer-events: none;
-      opacity: 0.6;
-    }
-    
-    .block-title {
-      font-size: 0.8em;
-      margin-bottom: 4px;
-      color: var(--accent-neon-blue);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      font-weight: bold;
-    }
-    
-    .block-category {
-      font-size: 0.7em;
-      opacity: 0.8;
-      margin-top: 2px;
-      color: #55d2ff;
-    }
-    
-    /* Workspace */
-    .workspace {
-      flex: 1;
-      background-color: var(--bg-secondary);
-      position: relative;
-      overflow-y: auto;
-      padding: 16px;
-      box-sizing: border-box;
-    }
-    
-    .block-container {
-      display: inline-block;
-      margin-bottom: 20px;
-      position: relative;
-      min-height: 40px;
-      background-color: #1e1e2d;
-      border-radius: 8px;
-      padding: 16px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      position: relative;
-    }
-    
-    .block-container::before {
-      content: "";
-      position: absolute;
-      top: -5px;
-      left: -5px;
-      right: -5px;
-      bottom: -5px;
-      border-radius: 8px;
-      background-color: rgba(0, 229, 255, 0.1);
-      pointer-events: none;
-    }
-    
-    .block-container::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      border-radius: 8px;
-      background-color: rgba(57, 255, 20, 0.1);
-      pointer-events: none;
-    }
-    
-    .block-content {
-      position: relative;
-      min-height: 36px;
-      padding-left: 4px;
-      font-family: monospace;
-      background-color: #1e1e2d;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      overflow: hidden;
-    }
-    
-    .block-input {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      margin-top: 6px;
-      font-size: 0.9em;
-      color: #aaa;
-    }
-    
-    .input-label {
-      width: 120px;
-      font-weight: bold;
-      color: var(--accent-neon-blue);
-    }
-    
-    .input-value {
-      flex-grow: 1;
-      padding: 4px 8px;
-      border-radius: 4px;
-      background-color: #333;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    /* Output Panel */
-    .output-panel {
-      width: 300px;
-      background-color: var(--bg-secondary);
-      padding: 16px;
-      border-left: 1px solid var(--border-color);
-      overflow-y: auto;
-      box-sizing: border-box;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .output-header {
-      font-size: 1.2em;
-      font-weight: bold;
-      margin-bottom: 16px;
-      color: var(--accent-neon-green);
-      text-shadow: 0 0 8px rgba(57, 255, 20, 0.3);
-    }
-    
-    .output-content {
-      flex-grow: 1;
-      padding: 16px;
-      background-color: #1e1e2d;
-      border-radius: 8px;
-      margin-bottom: 16px;
-      font-family: 'Courier New', monospace;
-      color: #fff;
-      white-space: pre-wrap;
-      line-height: 1.5;
-    }
-    
-    .ai-codegen {
-      padding: 12px;
-      border-radius: 8px;
-      background-color: rgba(0, 0, 0, 0.3);
-      margin-bottom: 16px;
-      box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.4);
-    }
-    
-    .ai-codegen textarea {
-      width: 100%;
-      height: 72px;
-      padding: 10px;
-      border-radius: 6px;
-      background-color: #1e1e2d;
-      color: var(--text-primary);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      font-family: 'Courier New', monospace;
-      resize: none;
-    }
-    
-    .ai-codegen button {
-      margin-top: 8px;
-      padding: 6px 12px;
-      background-color: var(--accent-neon-blue);
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    
-    .ai-codegen button:hover {
-      background-color: #00b9ff;
-      transform: scale(1.02);
-    }
-    
-    /* Controls */
-    .controls {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      display: flex;
-      gap: 16px;
-    }
-    
-    button {
-      padding: 8px 14px;
-      background-color: var(--accent-neon-blue);
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: all 0.2s ease;
-    }
-    
-    button:hover {
-      background-color: #00b9ff;
-      transform: translateY(-1px);
-    }
-    
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-      .container {
-        flex-direction: column;
-      }
-      
-      .palette {
-        width: 100%;
-        height: auto;
-      }
-      
-      .workspace, .output-panel {
-        padding: 8px;
-      }
-      
-      .controls {
-        position: relative;
-        top: initial;
-        right: initial;
-        flex-direction: column;
-        gap: 8px;
-        align-items: center;
-      }
-    }
-    
-    /* Block shadow effect */
-    .block-shadow {
-      position: absolute;
-      inset: -4px;
-      border-radius: 10px;
-      background-color: rgba(0, 229, 255, 0.3);
-      pointer-events: none;
-      opacity: 0.7;
-    }
-    
-    /* Hover effects */
-    .block-container:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2), inset 0 0 12px rgba(0, 255, 255, 0.3);
-    }
-    
-    .block-container:hover::before {
-      background-color: rgba(0, 229, 255, 0.4);
-    }
-    
-    /* Nested block styling */
-    .nested-block {
-      margin-left: 16px;
-      border-left: 2px solid var(--accent-neon-purple);
-      padding-left: 12px;
-      background-color: rgba(170, 0, 255, 0.1);
-      font-size: 0.9em;
-    }
-    
-    .nested-block::before {
-      content: "▶";
-      color: var(--accent-neon-purple);
-      margin-right: 4px;
-      font-weight: bold;
-    }
-    
-    /* Scrollbar styling */
-    ::-webkit-scrollbar {
-      width: 8px;
-    }
-    
-    ::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.2);
-    }
-    
-    ::-webkit-scrollbar-thumb {
-      background-color: var(--accent-neon-blue);
-      border-radius: 4px;
-    }
-    
-    ::-webkit-scrollbar-thumb:hover {
-      background-color: #00b9ff;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlockCoderForge | MegaPack200</title>
+    <style>
+        :root {
+            --bg-dark: #0d0d12;
+            --bg-panel: #16161e;
+            --neon-blue: #00f2ff;
+            --neon-purple: #bc00ff;
+            --neon-green: #39ff14;
+            --text-main: #e0e0e0;
+            --border-color: #2a2a3a;
+        }
+
+        body, html {
+            margin: 0; padding: 0; height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-dark); color: var(--text-main);
+            overflow: hidden;
+        }
+
+        #app {
+            display: grid;
+            grid-template-columns: 280px 1fr 350px;
+            height: 100vh;
+        }
+
+        /* PALETTE */
+        #palette {
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border-color);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+
+        .palette-header {
+            padding: 15px; border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(90deg, #1a1a2e, #16161e);
+            font-weight: bold; color: var(--neon-blue);
+        }
+
+        #block-list {
+            flex: 1; overflow-y: auto; padding: 10px;
+        }
+
+        /* WORKSPACE */
+        #workspace-container {
+            position: relative; overflow: auto;
+            background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        #workspace {
+            min-width: 2000px; min-height: 2000px; position: relative;
+        }
+
+        /* BLOCKS */
+        .block {
+            position: absolute; cursor: grab;
+            user-select: none; padding: 8px 12px;
+            border-radius: 4px; min-width: 120px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            display: flex; align-items: center; gap: 8px;
+            font-size: 13px; font-weight: 500;
+            border-left: 5px solid rgba(255,255,255,0.3);
+        }
+        
+        /* Scratch-style Puzzle Shapes */
+        .block::after {
+            content: ''; position: absolute; bottom: -8px; left: 15px;
+            width: 20px; height: 10px; background: inherit;
+            clip-path: polygon(0 0, 100% 0, 80% 100%, 20% 100%);
+        }
+        
+        .block::before {
+            content: ''; position: absolute; top: -2px; left: 15px;
+            width: 20px; height: 5px; background: var(--bg-dark);
+            clip-path: polygon(0 0, 100% 0, 80% 100%, 20% 100%);
+        }
+
+        .block-math { background: #4a90e2; }
+        .block-logic { background: #e67e22; }
+        .block-loops { background: #27ae60; }
+        .block-variables { background: #f1c40f; color: #000; }
+        .block-strings { background: #9b59b6; }
+        .block-ai { background: var(--neon-purple); }
+
+        .block-input {
+            background: rgba(255,255,255,0.2); border: none;
+            border-radius: 3px; color: white; width: 40px; padding: 2px;
+        }
+
+        /* SIDE PANEL */
+        #side-panel {
+            background: var(--bg-panel); border-left: 1px solid var(--border-color);
+            display: flex; flex-direction: column;
+        }
+
+        .panel-section {
+            flex: 1; display: flex; flex-direction: column;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .panel-label {
+            padding: 8px 15px; background: #1a1a26; font-size: 11px;
+            text-transform: uppercase; color: #888;
+        }
+
+        #python-output, #ai-input {
+            flex: 1; background: #09090d; color: var(--neon-green);
+            border: none; padding: 15px; font-family: 'Courier New', Courier, monospace;
+            resize: none; font-size: 13px; outline: none;
+        }
+
+        #ai-input { color: #fff; border-top: 2px solid var(--neon-purple); }
+
+        .btn {
+            background: #2a2a3a; color: white; border: none; padding: 8px 15px;
+            cursor: pointer; font-size: 12px; margin: 5px; border-radius: 4px;
+        }
+        .btn:hover { background: #3a3a4a; }
+        .btn-ai { background: var(--neon-purple); }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <!-- Palette -->
-    <div class="palette" id="block-palette">
-      <div class="palette-header">Blocks</div>
-      
-      <!-- Sections will be populated by JavaScript -->
+
+<div id="app">
+    <!-- PALETTE -->
+    <div id="palette">
+        <div class="palette-header">MegaPack200 Blocks</div>
+        <div id="block-list"></div>
+        <div style="padding: 10px;">
+            <button class="btn" onclick="saveWorkspace()">Save</button>
+            <button class="btn" onclick="loadWorkspace()">Load</button>
+        </div>
     </div>
 
-    <!-- Workspace -->
-    <div class="workspace" id="workspace">
-      <!-- Blocks will be added here dynamically -->
+    <!-- WORKSPACE -->
+    <div id="workspace-container">
+        <div id="workspace"></div>
     </div>
 
-    <!-- Output Panel -->
-    <div class="output-panel">
-      <div class="output-header">Python Output</div>
-      <div class="output-content" id="output-content"></div>
-      
-      <div class="ai-codegen">
-        <textarea placeholder="Enter text to generate Python code..."></textarea>
-        <button onclick="generateCode()">Generate Code</button>
-      </div>
+    <!-- CODE & AI PANEL -->
+    <div id="side-panel">
+        <div class="panel-section">
+            <div class="panel-label">Python Output</div>
+            <textarea id="python-output" readonly></textarea>
+        </div>
+        <div class="panel-section" style="flex: 0.6;">
+            <div class="panel-label">AI CodeGen (Text to Snippet)</div>
+            <textarea id="ai-input" placeholder="Describe logic (e.g. loop 10 times)..."></textarea>
+            <button class="btn btn-ai" onclick="runAICodeGen()">Generate & Append</button>
+        </div>
+        <div class="panel-section" style="flex: 0.4;">
+            <div class="panel-label">Addon Loader</div>
+            <div style="padding: 10px;">
+                <input type="text" id="addon-url" placeholder="Pack Name" style="width: 100%; margin-bottom: 5px;">
+                <button class="btn" style="width: 100%;" onclick="loadMockAddon()">Load Addon</button>
+            </div>
+        </div>
     </div>
+</div>
 
-    <!-- Controls -->
-    <div class="controls">
-      <button id="btn-save">Save</button>
-      <button id="btn-load">Load</button>
-    </div>
-  </div>
-
-  <script>
-    // MegaPack200 structure
+<script>
+    // --- MEGAPACK 200 REGISTRY ---
     const MegaPack200 = {
-      name: "MegaPack200",
-      sections: {
-        math: 30,
-        logic: 25,
-        loops: 25,
-        variables: 20,
-        strings: 20,
-        lists: 20,
-        functions: 20,
-        files: 10,
-        time: 10,
-        ai: 10,
-        advanced: 5,
-        fun: 5
-      }
+        name: "MegaPack200",
+        sections: {
+            math: Array.from({length: 30}, (_, i) => ({ id: `math_${i}`, type: 'math', title: i === 0 ? 'Add' : `Math ${i+1}`, category: 'math', inputs: ['val1', 'val2'], python: (v) => `${v[0]} + ${v[1]}` })),
+            logic: Array.from({length: 25}, (_, i) => ({ id: `logic_${i}`, type: 'logic', title: i === 0 ? 'If' : `Logic ${i+1}`, category: 'logic', inputs: ['cond'], python: (v) => `if ${v[0]}:` })),
+            loops: Array.from({length: 25}, (_, i) => ({ id: `loops_${i}`, type: 'loops', title: i === 0 ? 'Repeat' : `Loop ${i+1}`, category: 'loops', inputs: ['times'], python: (v) => `for i in range(${v[0]}):` })),
+            variables: Array.from({length: 20}, (_, i) => ({ id: `var_${i}`, type: 'variables', title: `Var ${i+1}`, category: 'variables', inputs: ['name', 'val'], python: (v) => `${v[0]} = ${v[1]}` })),
+            strings: Array.from({length: 20}, (_, i) => ({ id: `str_${i}`, type: 'strings', title: `Text ${i+1}`, category: 'strings', inputs: ['txt'], python: (v) => `"${v[0]}"` })),
+            lists: Array.from({length: 20}, (_, i) => ({ id: `list_${i}`, type: 'lists', title: `List ${i+1}`, category: 'lists', inputs: ['items'], python: (v) => `[${v[0]}]` })),
+            functions: Array.from({length: 20}, (_, i) => ({ id: `func_${i}`, type: 'functions', title: `Def ${i+1}`, category: 'functions', inputs: ['name'], python: (v) => `def ${v[0]}():` })),
+            files: Array.from({length: 10}, (_, i) => ({ id: `file_${i}`, type: 'files', title: `File ${i+1}`, category: 'files', inputs: ['path'], python: (v) => `open(${v[0]})` })),
+            time: Array.from({length: 10}, (_, i) => ({ id: `time_${i}`, type: 'time', title: `Wait ${i+1}`, category: 'time', inputs: ['sec'], python: (v) => `time.sleep(${v[0]})` })),
+            ai: Array.from({length: 10}, (_, i) => ({ id: `ai_${i}`, type: 'ai', title: `Neural ${i+1}`, category: 'ai', inputs: ['input'], python: (v) => `model.predict(${v[0]})` })),
+            advanced: Array.from({length: 5}, (_, i) => ({ id: `adv_${i}`, type: 'advanced', title: `Pro ${i+1}`, category: 'advanced', inputs: ['x'], python: (v) => `eval(${v[0]})` })),
+            fun: Array.from({length: 5}, (_, i) => ({ id: `fun_${i}`, type: 'fun', title: `Sparkle ${i+1}`, category: 'fun', inputs: [], python: () => `print("✨")` }))
+        }
     };
 
-    // Block registry - all blocks in the system
-    const blockRegistry = {
-      math: [
-        { type: "add", title: "Add two numbers", category: "math", inputs: ["a", "b"], python: "(a + b)" },
-        { type: "subtract", title: "Subtract two numbers", category: "math", inputs: ["a", "b"], python: "(a - b)" },
-        { type: "multiply", title: "Multiply two numbers", category: "math", inputs: ["a", "b"], python: "(a * b)" },
-        { type: "divide", title: "Divide two numbers", category: "math", inputs: ["a", "b"], python: "(a / b)" },
-        { type: "modulo", title: "Modulo operation", category: "math", inputs: ["a", "b"], python: "(a % b)" },
-        { type: "power", title: "Power (exponent)", category: "math", inputs: ["base", "exp"], python: "(base ** exp)" },
-        { type: "sqrt", title: "Square root", category: "math", inputs: ["n"], python: "(n ** 0.5)" },
-        { type: "round", title: "Round to nearest integer", category: "math", inputs: ["x"], python: "round(x)" },
-        { type: "abs", title: "Absolute value", category: "math", inputs: ["x"], python: "(abs(x))" },
-        { type: "floor", title: "Floor division", category: "math", inputs: ["a", "b"], python: "(a // b)" },
-        { type: "ceil", title: "Ceiling division", category: "math", inputs: ["a", "b"], python: "(a + (1 - a % b) // b)" },
-        { type: "max", title: "Maximum value", category: "math", inputs: ["a", "b"], python: "(max(a, b))" },
-        { type: "min", title: "Minimum value", category: "math", inputs: ["a", "b"], python: "(min(a, b))" },
-        { type: "random", title: "Random number between 0 and 1", category: "math", inputs: [], python: "random.random()" },
-        { type: "randint", title: "Random integer between min and max", category: "math", inputs: ["min", "max"], python: "random.randint(min, max)" },
-        { type: "seed", title: "Set random seed", category: "math", inputs: ["value"], python: "random.seed(value)" },
-        { type: "factorial", title: "Factorial of a number", category: "math", inputs: ["n"], python: "(1 if n <= 1 else n * factorial(n-1))" },
-        { type: "gcd", title: "Greatest common divisor", category: "math", inputs: ["a", "b"], python: "math.gcd(a, b)" },
-        { type: "lcm", title: "Least common multiple", category: "math", inputs: ["a", "b"], python: "(abs(a * b) // math.gcd(a, b))" },
-        { type: "pi", title: "Value of pi", category: "math", inputs: [], python: "3.141592653589793" },
-        { type: "euler", title: "Euler's number", category: "math", inputs: [], python: "2.718281828459045" },
-        { type: "log", title: "Natural logarithm", category: "math", inputs: ["x"], python: "(math.log(x))" },
-        { type: "log10", title: "Base 10 logarithm", category: "math", inputs: ["x"], python: "(math.log10(x))" },
-        { type: "sin", title: "Sine function", category: "math", inputs: ["angle"], python: "(math.sin(angle))" },
-        { type: "cos", title: "Cosine function", category: "math", inputs: ["angle"], python: "(math.cos(angle))" },
-        { type: "tan", title: "Tangent function", category: "math", inputs: ["angle"], python: "(math.tan(angle))" },
-        { type: "asin", title: "Arcsine function", category: "math", inputs: ["x"], python: "(math.asin(x))" },
-        { type: "acos", title: "Arccosine function", category: "math", inputs: ["x"], python: "(math.acos(x))" },
-        { type: "atan", title: "Arctangent function", category: "math", inputs: ["x"], python: "(math.atan(x))" },
-        { type: "degrees", title: "Convert radians to degrees", category: "math", inputs: ["radians"], python: "(radians * 180 / math.pi)" }
-      ],
-      
-      logic: [
-        { type: "if", title: "If condition", category: "logic", inputs: ["condition"], python: "if condition:" },
-        { type: "else", title: "Else clause", category: "logic", inputs: [], python: "else:" },
-        { type: "elif", title: "Else if condition", category: "logic", inputs: ["condition"], python: "elif condition:" },
-        { type: "and", title: "Logical AND", category: "logic", inputs: ["a", "b"], python: "(a and b)" },
-        { type: "or", title: "Logical OR", category: "logic", inputs: ["a", "b"], python: "(a or b)" },
-        { type: "not", title: "Logical NOT", category: "logic", inputs: ["condition"], python: "(not condition)" },
-        { type: "equal", title: "Equal to", category: "logic", inputs: ["a", "b"], python: "(a == b)" },
-        { type: "not_equal", title: "Not equal to", category: "logic", inputs: ["a", "b"], python: "(a != b)" },
-        { type: "greater_than", title: "Greater than", category: "logic", inputs: ["a", "b"], python: "(a > b)" },
-        { type: "less_than", title: "Less than", category: "logic", inputs: ["a", "b"], python: "(a < b)" },
-        { type: "greater_equal", title: "Greater than or equal to", category: "logic", inputs: ["a", "b"], python: "(a >= b)" },
-        { type: "less_equal", title: "Less than or equal to", category: "logic", inputs: ["a", "b"], python: "(a <= b)" },
-        { type: "is_true", title: "Check if true", category: "logic", inputs: ["value"], python: "(value is True)" },
-        { type: "is_false", title: "Check if false", category: "logic", inputs: ["value"], python: "(value is False)" },
-        { type: "in_list", title: "In list check", category: "logic", inputs: ["element", "list"], python: "(element in list)" },
-        { type: "not_in_list", title: "Not in list check", category: "logic", inputs: ["element", "list"], python: "(element not in list)" },
-        { type: "is_none", title: "Is none", category: "logic", inputs: ["value"], python: "(value is None)" },
-        { type: "is_not_none", title: "Not none", category: "logic", inputs: ["value"], python: "(value is not None)" },
-        { type: "boolean_to_int", title: "Convert boolean to int", category: "logic", inputs: ["bool_value"], python: "(int(bool_value))" },
-        { type: "int_to_bool", title: "Convert int to bool", category: "logic", inputs: ["int_value"], python: "(bool(int_value))" }
-      ],
-      
-      loops: [
-        { type: "repeat", title: "Repeat N times", category: "loops", inputs: ["n"], python: "for _ in range(n):" },
-        { type: "while", title: "While loop", category: "loops", inputs: ["condition"], python: "while condition:" },
-        { type: "forever", title: "Forever loop", category: "loops", inputs: [], python: "while True:" },
-        { type: "for_each", title: "For each item in list", category: "loops", inputs: ["list"], python: "for item in list:" },
-        { type: "for_index", title: "For index from 0 to N-1", category: "loops", inputs: ["n"], python: "for i in range(n):" },
-        { type: "loop_count", title: "Get loop counter", category: "loops", inputs: [], python: "i" },
-        { type: "break_loop", title: "Break current loop", category: "loops", inputs: [], python: "break" },
-        { type: "continue_loop", title: "Continue to next iteration", category: "loops", inputs: [], python: "continue" },
-        { type: "loop_until", title: "Loop until condition", category: "loops", inputs: ["condition"], python: "while not condition:" },
-        { type: "nested_repeat", title: "Nested repeat loop", category: "loops", inputs: ["outer_n", "inner_n"], python: "for _ in range(outer_n):\n    for _ in range(inner_n):" }
-      ],
-      
-      variables: [
-        { type: "set_variable", title: "Set variable value", category: "variables", inputs: ["name", "value"], python: f"{name} = {value}" },
-        { type: "get_variable", title: "Get variable value", category: "variables", inputs: ["name"], python: f"{name}" },
-        { type: "increment", title: "Increment variable by 1", category: "variables", inputs: ["name"], python: f"{name} += 1" },
-        { type: "decrement", title: "Decrement variable by 1", category: "variables", inputs: ["name"], python: f"{name} -= 1" },
-        { type: "variable_exists", title: "Check if variable exists", category: "variables", inputs: ["name"], python: f"(name in globals()) or (name in locals()}" },
-        { type: "clear_variable", title: "Clear variable value", category: "variables", inputs: ["name"], python: f"del {name}" },
-        { type: "variable_type", title: "Get variable type", category: "variables", inputs: ["var_name"], python: f"type({var_name})" },
-        { type: "set_global", title: "Set global variable", category: "variables", inputs: ["name", "value"], python: f"globals()[{name}] = {value}" },
-        { type: "get_global", title: "Get global variable", category: "variables", inputs: ["name"], python: f"globals().get({name})" }
-      ],
-      
-      strings: [
-        { type: "concatenate", title: "Concatenate two strings", category: "strings", inputs: ["a", "b"], python: f"{a} + {b}" },
-        { type: "string_length", title: "Get string length", category: "strings", inputs: ["str"], python: f"len({str})" },
-        { type: "substring", title: "Extract substring", category: "strings", inputs: ["str", "start", "end"], python: f"{str}[{start}:{end}]" },
-        { type: "upper_case", title: "Convert to uppercase", category: "strings", inputs: ["str"], python: f"{str.upper()}" },
-        { type:"lower_case", title: "Convert to lowercase", category: "strings", inputs: ["str"], python: f"{str.lower()}" },
-        { type: "capitalize", title: "Capitalize first letter", category: "strings", inputs: ["str"], python: f"{str.capitalize()}" },
-        { type: "title_case", title: "Title case format", category: "strings", inputs: ["str"], python: f"{str.title()}" },
-        { type: "replace", title: "Replace substring", category: "strings", inputs: ["text", "old", "new"], python: f"{text.replace(old, new)}" },
-        { type: "split", title: "Split string by delimiter", category: "strings", inputs: ["str", "delimiter"], python: f"{str.split(delimiter)}" },
-        { type: "join", title: "Join list with separator", category: "strings", inputs: ["list", "separator"], python: f"{separator}.join(list)" },
-        { type: "find", title: "Find substring position", category: "strings", inputs: ["str", "substring"], python: f"{str.find(substring)}" },
-        { type: "rfind", title: "Find last occurrence", category: "strings", inputs: ["str", "substring"], python: f"{str.rfind(substring)}" },
-        { type: "index_of", title: "Get index of character", category: "strings", inputs: ["str", "char"], python: f"{str.index(char)}" },
-        { type: "count", title: "Count occurrences", category: "strings", inputs: ["str", "substring"], python: f"{str.count(substring)}" }
-      ],
-      
-      lists: [
-        { type: "create_list", title: "Create empty list", category: "lists", inputs: [], python: "[]" },
-        { type: "add_to_list", title: "Add item to end of list", category: "lists", inputs: ["list", "item"], python: f"{list}.append(item)" },
-        { type: "insert_into_list", title: "Insert at specific index", category: "lists", inputs: ["list", "index", "item"], python: f"{list}.insert(index, item)" },
-        { type: "remove_from_list", title: "Remove first occurrence", category: "lists", inputs: ["list", "item"], python: f"{list}.remove(item)" },
-        { type: "pop_item", title: "Pop last item from list", category: "lists", inputs: ["list"], python: f"{list}.pop()" },
-        { type: "get_list_length", title: "Get length of list", category: "lists", inputs: ["list"], python: f"len({list})" },
-        { type: "get_item_at_index", title: "Get item at index", category: "lists", inputs: ["list", "index"], python: f"{list}[index]" },
-        { type: "set_item_at_index", title: "Set item at index", category: "lists", inputs: ["list", "index", "value"], python: f"{list}[index] = value" },
-        { type: "slice_list", title: "Slice list from start to end", category: "lists", inputs: ["list", "start", "end"], python: f"{list}[{start}:{end}]" },
-        { type: "reverse_list", title: "Reverse the order of elements", category: "lists", inputs: ["list"], python: f"{list[::-1]}" },
-        { type: "sort_list", title: "Sort list in ascending order", category: "lists", inputs: ["list"], python: f"sorted({list})" },
-        { type: "sort_descending", title: "Sort list in descending order", category: "lists", inputs: ["list"], python: f"sorted({list}, reverse=True)" },
-        { type: "find_in_list", title: "Find index of item", category: "lists", inputs: ["list", "item"], python: f"{list}.index(item)" },
-        { type: "check_membership", title: "Check if item exists in list", category: "lists", inputs: ["list", "item"], python: f"(item in list)" }
-      ],
-      
-      functions: [
-        { type: "define_function", title: "Define function", category: "functions", inputs: ["name", "parameters", "body"], python: f"def {name}({parameters}): \n    {body}" },
-        { type: "call_function", title: "Call existing function", category: "functions", inputs: ["function_name", "args"], python: f"{function_name}({args})" },
-        { type: "return_value", title: "Return value from function", category: "functions", inputs: ["value"], python: "return value" },
-        { type: "parameter_types", title: "Get parameter types", category: "functions", inputs: ["func_name"], python: f"type({func_name})" },
-        { type: "function_exists", title: "Check if function exists", category: "functions", inputs: ["name"], python: f"(name in globals()) or (name in locals()}" },
-        { type: "get_function_signature", title: "Get function signature", category: "functions", inputs: ["func_name"], python: f"{func_name}()" },
-        { type: "lambda_function", title: "Create lambda function", category: "functions", inputs: ["params", "body"], python: f"lambda {params}: {body}" }
-      ],
-      
-      files: [
-        { type: "open_file", title: "Open file for reading", category: "files", inputs: ["filename"], python: f"open({filename}, 'r')" },
-        { type: "write_file", title: "Write to file", category: "files", inputs: ["filename", "content"], python: f"with open({filename}, 'w') as f:\n    f.write({content})" },
-        { type: "read_file", title: "Read entire file content", category: "files", inputs: ["filename"], python: f"open({filename}, 'r').read()" },
-        { type: "append_to_file", title: "Append to existing file", category: "files", inputs: ["filename", "content"], python: f"with open({filename}, 'a') as f:\n    f.write({content})" },
-        { type: "file_exists", title: "Check if file exists", category: "files", inputs: ["filename"], python: f"os.path.exists({filename})" },
-        { type: "get_file_size", title: "Get file size in bytes", category: "files", inputs: ["filename"], python: f"os.path.getsize({filename})" },
-        { type: "delete_file", title: "Delete file", category: "files", inputs: ["filename"], python: f"os.remove({filename})" },
-        { type: "list_directory", title: "List directory contents", category: "files", inputs: ["directory_path"], python: f"os.listdir({directory_path})" }
-      ],
-      
-      time: [
-        { type: "get_time", title: "Get current timestamp", category: "time", inputs: [], python: "datetime.datetime.now()" },
-        { type: "get_date", title: "Get date string", category: "time", inputs: [], python: "datetime.date.today().strftime('%Y-%m-%d')" },
-        { type: "get_time_seconds", title: "Get time in seconds since epoch", category: "time", inputs: [], python: "int(time.time())" },
-        { type: "sleep", title: "Sleep for N seconds", category: "time", inputs: ["seconds"], python: f"time.sleep({seconds})" },
-        { type: "format_time", title: "Format time string", category: "time", inputs: ["timestamp"], python: f"{timestamp.strftime('%H:%M:%S')}" },
-        { type: "get_current_hour", title: "Get current hour", category: "time", inputs: [], python: "datetime.datetime.now().hour" },
-        { type: "get_current_minute", title: "Get current minute", category: "time", inputs: [], python: "datetime.datetime.now().minute" },
-        { type: "get_current_second", title: "Get current second", category: "time", inputs: [], python: "datetime.datetime.now().second" }
-      ],
-      
-      ai: [
-        { type: "ai_generate_text", title: "Generate text with AI model", category: "ai", inputs: ["prompt"], python: f"generate_ai_response('{prompt}')" },
-        { type: "ai_translate", title: "Translate text to another language", category: "ai", inputs: ["text", "target_language"], python: f"translate_text({text}, '{target_language}')" },
-        { type: "ai_summarize", title: "Summarize long document", category: "ai", inputs: ["document"], python: f"summarize_document('{document}')" },
-        { type: "ai_code_suggest", title: "Suggest code completion", category: "ai", inputs: ["code_snippet"], python: f"suggest_next_line({code_snippet})" },
-        { type: "ai_answer_question", title: "Answer a question using AI", category: "ai", inputs: ["question"], python: f"answer_question('{question}')" },
-        { type: "ai_explain_concept", title: "Explain technical concept", category: "ai", inputs: ["concept"], python: f"explain_concept('{concept}')" },
-        { type: "ai_debug_code", title: "Analyze code for bugs", category: "ai", inputs: ["code"], python: f"analyze_code({code})" },
-        { type: "ai_optimize_code", title: "Optimize existing code", category: "ai", inputs: ["code"], python: f"optimize_code({code})" }
-      ],
-      
-      advanced: [
-        { type: "debug_print", title: "Debug print statement", category: "advanced", inputs: ["message"], python: f"print('{message}')\n" },
-        { type: "exception_handler", title: "Try-except block", category: "advanced", inputs: ["code_to_execute"], python: f"try:\n    {code_to_execute}\nexcept Exception as e:\n    print(e)" },
-        { type: "import_module", title: "Import Python module", category: "advanced", inputs: ["module_name"], python: f"import {module_name}" },
-        { type: "global_scope", title: "Access global scope variables", category: "advanced", inputs: [], python: "globals()" },
-        { type: "local_scope", title: "Access local scope variables", category: "advanced", inputs: [], python: "locals()" }
-      ],
-      
-      fun: [
-        { type: "random_choice", title: "Randomly select from list", category: "fun", inputs: ["options"], python: f"random.choice({options})" },
-        { type: "generate_password", title: "Generate random password", category: "fun", inputs: ["length"], python: f"''.join(random.choices('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k={length}))" },
-        { type: "roll_dice", title: "Roll a six-sided die", category: "fun", inputs: [], python: "random.randint(1, 6)" },
-        { type: "generate_meme", title: "Generate meme text", category: "fun", inputs: ["topic"], python: f"create_meme_text('{topic}')" },
-        { type: "play_sound", title: "Play sound effect", category: "fun", inputs: ["file_path"], python: f"playsound({file_path})" }
-      ]
-    };
+    const BlockRegistry = {};
+    const WorkspaceState = [];
 
-    // Initialize workspace
-    const workspace = document.getElementById('workspace');
-    
-    // Block container for building blocks in the workspace
-    let blockContainers = [];
-    
-    // Current block being dragged (for nesting)
-    let currentDraggedBlock = null;
-    let currentNestedBlock = null;
-
-    // Function to create a new block element
-    function createBlockElement(block, parentContainer) {
-      const container = document.createElement('div');
-      container.className = 'block-container';
-      
-      // Create the block content
-      const content = document.createElement('div');
-      content.className = 'block-content';
-      
-      // Add title and category info
-      content.innerHTML = `<strong>${block.title}</strong> (${block.category})`;
-      
-      // Add inputs if any
-      if (block.inputs && block.inputs.length > 0) {
-        const inputSection = document.createElement('div');
-        inputSection.className = 'block-inputs';
-        
-        for (let i = 0; i < block.inputs.length; i++) {
-          const inputLabel = document.createElement('span');
-          inputLabel.className = 'input-label';
-          inputLabel.textContent = block.inputs[i];
-          
-          const inputValue = document.createElement('div');
-          inputValue.className = 'input-value';
-          inputValue.placeholder = `Enter value for ${block.inputs[i]}`;
-          
-          inputSection.appendChild(inputLabel);
-          inputSection.appendChild(inputValue);
-        }
-        
-        content.appendChild(inputSection);
-      }
-      
-      container.appendChild(content);
-      
-      // Add hover effect
-      container.addEventListener('mouseenter', () => {
-        container.style.transform = 'translateY(-4px)';
-        container.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.2), inset 0 0 12px rgba(0, 255, 255, 0.3)';
-      });
-      
-      container.addEventListener('mouseleave', () => {
-        container.style.transform = 'translateY(0)';
-        container.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
-      });
-      
-      // Add click event to add block
-      container.addEventListener('click', (e) => {
-        e.stopPropagation();
-        
-        if (!currentDraggedBlock && !currentNestedBlock) {
-          currentDraggedBlock = { ...block };
-          const newContainer = createBlockElement(currentDraggedBlock, workspace);
-          
-          // Add indentation for nested blocks
-          if (parentContainer) {
-            parentContainer.appendChild(newContainer);
-          } else {
-            workspace.appendChild(newContainer);
-          }
-          
-          // Update the block registry with proper nesting
-          updateNestedBlocks();
-        }
-      });
-      
-      return container;
-    }
-
-    function createPaletteSection(sectionName, blocks) {
-      const section = document.createElement('div');
-      section.className = 'section';
-      
-      const titleDiv = document.createElement('div');
-      titleDiv.className = 'section-title';
-      titleDiv.textContent = sectionName;
-      
-      section.appendChild(titleDiv);
-      
-      // Create block elements
-      for (const block of blocks) {
-        const blockElement = document.createElement('div');
-        blockElement.className = 'block';
-        
-        const titleSpan = document.createElement('span');
-        titleSpan.className = 'block-title';
-        titleSpan.textContent = block.title;
-        
-        const categorySpan = document.createElement('span');
-        categorySpan.className = 'block-category';
-        categorySpan.textContent = block.category;
-        
-        blockElement.appendChild(titleSpan);
-        blockElement.appendChild(categorySpan);
-        
-        section.appendChild(blockElement);
-      }
-      
-      return section;
-    }
-
-    // Function to populate the palette with all blocks
-    function populatePalette() {
-      const palette = document.getElementById('block-palette');
-      palette.innerHTML = '';
-      
-      // Create sections for each category in the block registry
-      Object.keys(blockRegistry).forEach(category => {
-        const blocks = blockRegistry[category];
-        
-        if (blocks && Array.isArray(blocks)) {
-          const section = createPaletteSection(category, blocks);
-          palette.appendChild(section);
-        }
-      });
-    }
-
-    // Function to generate Python code from the current workspace
-    function generateCodeFromWorkspace() {
-      let pythonCode = "";
-      
-      // Traverse through all block containers in the workspace
-      const containers = Array.from(document.querySelectorAll('.block-container'));
-      
-      for (const container of containers) {
-        const titleText = container.querySelector('strong')?.textContent || "Unknown Block";
-        
-        // Extract inputs from the container
-        let inputs = [];
-        if (container.querySelector('.block-inputs')) {
-          const inputElements = container.querySelectorAll('.input-value');
-          
-          for (let i = 0; i < inputElements.length; i++) {
-            inputs.push({
-              name: container.querySelector(`.input-label:nth-child(${i+1})`)?.textContent || `input_${i}`,
-              value: inputElements[i].value
+    // --- ENGINE LOGIC ---
+    function init() {
+        // Flatten MegaPack into Registry
+        Object.values(MegaPack200.sections).forEach(section => {
+            section.forEach(block => {
+                BlockRegistry[block.id] = block;
             });
-          }
-        }
-        
-        // Add the block code to our output based on title and inputs
-        const blockType = titleText.split(' ')[0];
-        
-        if (blockType === 'Add') {
-          pythonCode += "print(2 + 3)\n";
-        } else if (blockType === 'If') {
-          pythonCode += "if True:\n    print('Condition met!')\n";
-        } else if (blockType === 'Repeat') {
-          pythonCode += "for i in range(5):\n    print(i)\n";
-        } else if (blockType === 'Set variable') {
-          pythonCode += "x = 10\n";
-        } else {
-          // Default block - just append a basic statement
-          pythonCode += f"{titleText}\n";
-        }
-        
-        // Add indentation for nested blocks
-        const parentContainer = container.parentElement;
-        if (parentContainer && parentContainer.tagName === 'DIV') {
-          const index = Array.from(parentContainer.children).indexOf(container);
-          if (index > 0) {
-            pythonCode += "    ";
-          }
-        }
-      }
-      
-      return pythonCode.trim();
-    }
-
-    // Function to update the output panel with generated code
-    function updateOutputPanel(code) {
-      document.getElementById('output-content').textContent = code || "No blocks created yet.";
-    }
-
-    // Function to handle save/load operations using localStorage
-    function saveWorkspace() {
-      const workspaceData = {
-        blocks: [],
-        timestamp: new Date().toISOString()
-      };
-      
-      // Extract all block data from the workspace
-      const containers = Array.from(document.querySelectorAll('.block-container'));
-      
-      for (const container of containers) {
-        const titleText = container.querySelector('strong')?.textContent || "Unknown Block";
-        
-        const inputs = [];
-        if (container.querySelector('.block-inputs')) {
-          const inputElements = container.querySelectorAll('.input-value');
-          
-          for (let i = 0; i < inputElements.length; i++) {
-            inputs.push({
-              name: container.querySelector(`.input-label:nth-child(${i+1})`)?.textContent || `input_${i}`,
-              value: inputElements[i].value
-            });
-          }
-        }
-        
-        workspaceData.blocks.push({
-          title: titleText,
-          inputs: inputs,
-          timestamp: new Date().toISOString()
         });
-      }
-      
-      localStorage.setItem('blockcoderforge_workspace', JSON.stringify(workspaceData));
+
+        renderPalette();
+        setupDragAndDrop();
+    }
+
+    function renderPalette() {
+        const list = document.getElementById('block-list');
+        list.innerHTML = '';
+        Object.keys(MegaPack200.sections).forEach(cat => {
+            const header = document.createElement('div');
+            header.className = 'panel-label';
+            header.innerText = cat;
+            list.appendChild(header);
+
+            MegaPack200.sections[cat].slice(0, 5).forEach(block => { // Show 5 per category to keep it clean
+                const el = createBlockElement(block, true);
+                list.appendChild(el);
+            });
+        });
+    }
+
+    function createBlockElement(block, isPalette = false) {
+        const div = document.createElement('div');
+        div.className = `block block-${block.category}`;
+        div.dataset.id = block.id;
+        div.innerHTML = `<span>${block.title}</span>`;
+        
+        block.inputs.forEach(input => {
+            const inp = document.createElement('input');
+            inp.className = 'block-input';
+            inp.placeholder = input;
+            inp.onclick = (e) => e.stopPropagation();
+            inp.oninput = generatePython;
+            div.appendChild(inp);
+        });
+
+        if (isPalette) {
+            div.style.position = 'relative';
+            div.style.marginBottom = '15px';
+            div.setAttribute('draggable', 'true');
+            div.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('blockId', block.id);
+            });
+        }
+        return div;
+    }
+
+    function setupDragAndDrop() {
+        const ws = document.getElementById('workspace');
+        ws.addEventListener('dragover', (e) => e.preventDefault());
+        ws.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const blockId = e.dataTransfer.getData('blockId');
+            const blockDef = BlockRegistry[blockId];
+            if (!blockDef) return;
+
+            const rect = ws.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const newBlock = createBlockElement(blockDef);
+            newBlock.style.left = x + 'px';
+            newBlock.style.top = y + 'px';
+            
+            // Basic Snap-to-Grid
+            newBlock.style.left = Math.round(x/20)*20 + 'px';
+            newBlock.style.top = Math.round(y/20)*20 + 'px';
+
+            makeDraggable(newBlock);
+            ws.appendChild(newBlock);
+            generatePython();
+        });
+    }
+
+    function makeDraggable(el) {
+        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        el.onmousedown = (e) => {
+            if (e.target.tagName === 'INPUT') return;
+            e.preventDefault();
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            document.onmouseup = () => {
+                document.onmouseup = null;
+                document.onmousemove = null;
+                generatePython();
+            };
+            document.onmousemove = (e) => {
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                el.style.top = (el.offsetTop - pos2) + "px";
+                el.style.left = (el.offsetLeft - pos1) + "px";
+            };
+        };
+    }
+
+    // --- CODE GENERATOR ---
+    function generatePython() {
+        const workspaceBlocks = Array.from(document.querySelectorAll('#workspace .block'));
+        // Sort blocks by Y position for simple linear execution
+        workspaceBlocks.sort((a, b) => a.offsetTop - b.offsetTop);
+
+        let code = "";
+        workspaceBlocks.forEach(el => {
+            const blockDef = BlockRegistry[el.dataset.id];
+            const inputs = Array.from(el.querySelectorAll('input')).map(i => i.value || '0');
+            code += blockDef.python(inputs) + "\n";
+        });
+        document.getElementById('python-output').value = code;
+    }
+
+    // --- AI CODEGEN ---
+    function runAICodeGen() {
+        const text = document.getElementById('ai-input').value.toLowerCase();
+        let snippet = "# AI Generated Snippet\n";
+        
+        if (text.includes('loop')) snippet += "for i in range(10):\n    print('Looping...')";
+        else if (text.includes('if')) snippet += "if x > 10:\n    pass";
+        else snippet += "print('Simulated AI Logic Result')";
+
+        document.getElementById('python-output').value += "\n" + snippet;
+    }
+
+    // --- ADDON LOADER ---
+    function loadMockAddon() {
+        const name = document.getElementById('addon-url').value || 'ExtraPack';
+        alert(`Loading dynamic addon: ${name}. Synchronizing block registry...`);
+        // Logic to merge into MegaPack200.sections would go here
+    }
+
+    // --- SAVE/LOAD ---
+    function saveWorkspace() {
+        const data = Array.from(document.querySelectorAll('#workspace .block')).map(el => ({
+            id: el.dataset.id,
+            x: el.style.left,
+            y: el.style.top,
+            vals: Array.from(el.querySelectorAll('input')).map(i => i.value)
+        }));
+        localStorage.setItem('blockCoderSave', JSON.stringify(data));
+        alert("Saved to local storage!");
     }
 
     function loadWorkspace() {
-      const savedData = localStorage.getItem('blockcoderforge_workspace');
-      
-      if (savedData) {
-        try {
-          const workspaceData = JSON.parse(savedData);
-          
-          // Clear current workspace
-          document.getElementById('workspace').innerHTML = '';
-          
-          // Rebuild blocks from saved data
-          for (const block of workspaceData.blocks) {
-            const container = createBlockElement({
-              title: block.title,
-              category: "unknown",
-              inputs: block.inputs || []
-            }, null);
-            
-            // Add to workspace
-            document.getElementById('workspace').appendChild(container);
-          }
-          
-          updateOutputPanel(generateCodeFromWorkspace());
-        } catch (error) {
-          console.error("Error loading workspace:", error);
-        }
-      }
+        const data = JSON.parse(localStorage.getItem('blockCoderSave'));
+        if (!data) return;
+        const ws = document.getElementById('workspace');
+        ws.innerHTML = '';
+        data.forEach(d => {
+            const blockDef = BlockRegistry[d.id];
+            const el = createBlockElement(blockDef);
+            el.style.left = d.x;
+            el.style.top = d.y;
+            const inps = el.querySelectorAll('input');
+            d.vals.forEach((v, i) => inps[i].value = v);
+            makeDraggable(el);
+            ws.appendChild(el);
+        });
+        generatePython();
     }
 
-    function generateCode() {
-      const inputText = document.querySelector('.ai-codegen textarea').value;
-      
-      if (!inputText.trim()) {
-        alert('Please enter some text to generate code from!');
-        return;
-      }
-      
-      // Simple AI-generated Python code based on user input
-      let generatedCode = "";
-      
-      // Use basic pattern matching and string replacement
-      const lowerInput = inputText.toLowerCase();
-      
-      if (lowerInput.includes("add") || lowerInput.includes("sum")) {
-        generatedCode += "print(5 + 3)\n";
-      } else if (lowerInput.includes("if") || lowerInput.includes("condition")) {
-        generatedCode += "if True:\n    print('Condition met!')\n";
-      } else if (lowerInput.includes("loop") || lowerInput.includes("repeat")) {
-        generatedCode += "for i in range(10):\n    print(i)\n";
-      } else if (lowerInput.includes("variable") || lowerInput.includes("set")) {
-        generatedCode += "x = 10\ny = 20\nprint(x + y)\n";
-      } else {
-        // Default - generate a simple function
-        const randomFunctionName = ["calculate_area", "get_average", "process_data"][Math.floor(Math.random() * 3)];
-        generatedCode += f"def {randomFunctionName}(value):\n    return value * 2\n\nprint({randomFunctionName}(5))\n";
-      }
-      
-      // Update output panel
-      updateOutputPanel(generatedCode);
-    }
+    init();
+</script>
 
-    // Initialize the app when loaded
-    window.addEventListener('load', () => {
-      populatePalette();
-      loadWorkspace(); // Load saved workspace if available
-      
-      // Add event listeners to save/load buttons
-      document.getElementById('btn-save').addEventListener('click', saveWorkspace);
-      document.getElementById('btn-load').addEventListener('click', loadWorkspace);
-      
-      // Set up the AI CodeGen button click handler
-      document.querySelector('.ai-codegen button').addEventListener('click', generateCode);
-    });
-
-    // Update nested blocks when new ones are added
-    function updateNestedBlocks() {
-      const containers = Array.from(document.querySelectorAll('.block-container'));
-      
-      for (const container of containers) {
-        if (!container.dataset.nested) {
-          container.dataset.nested = "false";
-          
-          // Add nested block styling
-          const content = container.querySelector('.block-content');
-          if (content) {
-            content.innerHTML += "<div class='nested-block'>Inner blocks go here</div>";
-          }
-        }
-      }
-    }
-
-    // Function to add a new block with nesting support
-    function addNestedBlock(parentContainer, blockData) {
-      const nestedContainer = document.createElement('div');
-      nestedContainer.className = 'block-container';
-      
-      // Create content based on block data
-      const content = document.createElement('div');
-      content.className = 'block-content';
-      
-      content.innerHTML = `<strong>${blockData.title}</strong> (${blockData.category})`;
-      
-      if (blockData.inputs && blockData.inputs.length > 0) {
-        const inputSection = document.createElement('div');
-        inputSection.className = 'block-inputs';
-        
-        for (let i = 0; i < blockData.inputs.length; i++) {
-          const inputLabel = document.createElement('span');
-          inputLabel.className = 'input-label';
-          inputLabel.textContent = blockData.inputs[i];
-          
-          const inputValue = document.createElement('div');
-          inputValue.className = 'input-value';
-          inputValue.placeholder = `Enter value for ${blockData.inputs[i]}`;
-          
-          inputSection.appendChild(inputLabel);
-          inputSection.appendChild(inputValue);
-        }
-        
-        content.appendChild(inputSection);
-      }
-      
-      nestedContainer.appendChild(content);
-      
-      // Add to parent container
-      if (parentContainer) {
-        parentContainer.appendChild(nestedContainer);
-      } else {
-        workspace.appendChild(nestedContainer);
-      }
-    }
-
-    // Function to create a new block with proper indentation and nesting
-    function createBlockFromPalette(block, parentContainer = null) {
-      const newBlock = { ...block };
-      
-      if (parentContainer) {
-        // Add nested block styling
-        newBlock.nested = true;
-        
-        // Create the container element
-        const container = document.createElement('div');
-        container.className = 'block-container';
-        
-        const content = document.createElement('div');
-        content.className = 'block-content';
-        
-        content.innerHTML = `<strong>${newBlock.title}</strong> (${newBlock.category})`;
-        
-        if (newBlock.inputs && newBlock.inputs.length > 0) {
-          const inputSection = document.createElement('div');
-          inputSection.className = 'block-inputs';
-          
-          for (let i = 0; i < newBlock.inputs.length; i++) {
-            const inputLabel = document.createElement('span');
-            inputLabel.className = 'input-label';
-            inputLabel.textContent = newBlock.inputs[i];
-            
-            const inputValue = document.createElement('div');
-            inputValue.className = 'input-value';
-            inputValue.placeholder = `Enter value for ${newBlock.inputs[i]}`;
-            
-            inputSection.appendChild(inputLabel);
-            inputSection.appendChild(inputValue);
-          }
-          
-          content.appendChild(inputSection);
-        }
-        
-        container.appendChild(content);
-        parentContainer.appendChild(container);
-      } else {
-        // Create a standalone block
-        const container = createBlockElement(newBlock, workspace);
-        workspace.appendChild(container);
-      }
-      
-      return container;
-    }
-
-  </script>
 </body>
 </html>
