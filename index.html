@@ -1,283 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ISPWin-12 AI OS</title>
-<style>
-/* CSS VARIABLES & CORE UI */
-:root {
-    --taskbar-bg: rgba(15, 15, 15, 0.9);
-    --win-bg: #1e1e1e;
-    --win-text: #e0e0e0;
-    --accent: #0078d4;
-    --desktop-bg: #0a0a0a;
-    --block-blue: #4c97ff;
-    --block-green: #59c059;
-}
-
-* { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-
-body, html {
-    width: 100%; height: 100%; overflow: hidden;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background: var(--desktop-bg);
-    background-image: radial-gradient(circle at center, #1a2a3a 0%, #000 100%);
-}
-
-/* DESKTOP & ICONS */
-#desktop {
-    width: 100vw; height: calc(100vh - 40px);
-    position: relative; padding: 25px;
-    display: flex; flex-direction: column; flex-wrap: wrap; gap: 20px; align-content: flex-start;
-}
-
-.icon {
-    width: 90px; display: flex; flex-direction: column; align-items: center;
-    cursor: pointer; padding: 10px; border-radius: 8px; transition: background 0.2s;
-}
-.icon:hover { background: rgba(255, 255, 255, 0.1); }
-.icon-img {
-    width: 50px; height: 50px; background: var(--accent); border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 24px; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-}
-.icon-text { color: white; font-size: 12px; margin-top: 8px; text-shadow: 1px 1px 3px black; }
-
-/* WINDOW SYSTEM */
-.window {
-    position: absolute; min-width: 400px; min-height: 300px;
-    background: var(--win-bg); border: 1px solid #333; border-radius: 10px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.6); display: flex; flex-direction: column;
-    overflow: hidden; z-index: 10;
-}
-.win-header {
-    background: #2d2d2d; padding: 12px; display: flex; justify-content: space-between;
-    align-items: center; cursor: move; border-bottom: 1px solid #3d3d3d;
-}
-.win-title { font-size: 13px; font-weight: 500; color: #fff; }
-.win-controls { display: flex; gap: 8px; }
-.win-btn { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; }
-.btn-close { background: #ff5f56; }
-.btn-min { background: #ffbd2e; }
-.btn-max { background: #27c93f; }
-.win-body { flex: 1; position: relative; overflow: hidden; color: var(--win-text); display: flex; }
-
-/* AI CODE GEN APP */
-#ai-app { width: 850px; height: 550px; }
-.sidebar { width: 250px; background: #252526; border-right: 1px solid #333; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
-.main-editor { flex: 1; display: flex; flex-direction: column; background: #1a1a1a; }
-.block-area { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; background: #111; }
-.code-preview { height: 150px; background: #000; color: #0f0; font-family: monospace; padding: 10px; font-size: 12px; border-top: 1px solid #333; white-space: pre-wrap; overflow-y: auto; }
-
-/* UI ELEMENTS */
-input, textarea, select {
-    background: #3c3c3c; border: 1px solid #555; color: white; padding: 8px; border-radius: 4px; outline: none;
-}
-button {
-    background: var(--accent); color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: 600;
-}
-button:hover { filter: brightness(1.1); }
-
-/* BLOCKS */
-.block {
-    padding: 10px; border-radius: 6px; font-weight: bold; cursor: grab; font-size: 13px;
-    display: flex; justify-content: space-between; align-items: center; color: white;
-}
-.block-logic { background: var(--block-blue); }
-.block-action { background: var(--block-green); }
-.block-remove { cursor: pointer; opacity: 0.7; font-size: 16px; }
-
-/* TASKBAR */
-#taskbar {
-    position: absolute; bottom: 0; width: 100%; height: 40px;
-    background: var(--taskbar-bg); backdrop-filter: blur(15px);
-    display: flex; align-items: center; padding: 0 15px; z-index: 1000;
-}
-#start-btn { background: var(--accent); color: white; border: none; padding: 5px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; }
-#clock { color: white; margin-left: auto; font-size: 14px; font-variant-numeric: tabular-nums; }
-</style>
+    <meta charset="UTF-8">
+    <title>ISPWin-12 Pro (llama.cpp Edition)</title>
+    <!-- Core wllama library from CDN -->
+    <script src="https://cdn.jsdelivr.net"></script>
+    <style>
+        :root { --accent: #0078d4; --bg: #0a0a0a; --win-bg: #1e1e1e; }
+        body, html { height: 100%; margin: 0; overflow: hidden; background: var(--bg); font-family: sans-serif; color: white; }
+        
+        /* OS Interface */
+        #desktop { width: 100vw; height: calc(100vh - 40px); position: relative; padding: 20px; }
+        .icon { width: 80px; text-align: center; cursor: pointer; margin-bottom: 20px; }
+        .icon-box { width: 50px; height: 50px; background: var(--accent); border-radius: 10px; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        
+        /* Window System */
+        .window { position: absolute; width: 800px; height: 500px; background: var(--win-bg); border: 1px solid #444; border-radius: 8px; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 10; }
+        .win-head { background: #2d2d2d; padding: 10px; cursor: move; display: flex; justify-content: space-between; border-radius: 8px 8px 0 0; }
+        .win-body { flex: 1; display: flex; overflow: hidden; }
+        
+        /* AI App Layout */
+        .sidebar { width: 280px; background: #252526; padding: 15px; border-right: 1px solid #333; overflow-y: auto; }
+        .editor { flex: 1; background: #111; display: flex; flex-direction: column; }
+        #blocks-container { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .code-view { height: 120px; background: #000; color: #0f0; font-family: monospace; padding: 10px; border-top: 1px solid #333; font-size: 12px; }
+        
+        /* Blocks */
+        .block { padding: 12px; border-radius: 6px; font-weight: bold; background: #4c97ff; border-left: 5px solid #2979ff; }
+        
+        /* Taskbar */
+        #taskbar { position: fixed; bottom: 0; width: 100%; height: 40px; background: rgba(0,0,0,0.8); display: flex; align-items: center; padding: 0 15px; border-top: 1px solid #333; }
+        button { background: var(--accent); color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; }
+        .status-pill { font-size: 12px; margin-left: 15px; padding: 2px 8px; border-radius: 10px; background: #444; }
+    </style>
 </head>
-<body onclick="hideStartMenu()">
+<body>
 
 <div id="desktop">
-    <div class="icon" onclick="openApp('AICodeGen')">
-        <div class="icon-img">⚡</div>
-        <div class="icon-text">AI Code Blocks</div>
-    </div>
-    <div class="icon" onclick="openApp('Terminal')">
-        <div class="icon-img">_></div>
-        <div class="icon-text">Terminal</div>
+    <div class="icon" onclick="openAIApp()">
+        <div class="icon-box">🧠</div>
+        <div style="margin-top:5px; font-size:12px;">AI CodeGen</div>
     </div>
 </div>
 
 <div id="taskbar">
-    <button id="start-btn" onclick="event.stopPropagation(); downloadFile()">💾 Export OS</button>
-    <div id="clock">00:00:00</div>
+    <button onclick="downloadArtifact()">💾 Save OS</button>
+    <div id="ai-status" class="status-pill">AI Engine: Offline</div>
 </div>
 
-<!-- TEMPLATE FOR AI WINDOW -->
-<div id="app-templates" style="display:none">
-    <div id="tpl-AICodeGen">
+<!-- AI App Template -->
+<div id="ai-win" class="window" style="display:none; left:100px; top:50px;">
+    <div class="win-head" onmousedown="dragWindow(event)">
+        <span>ISPWin Pro - llama.cpp AI</span>
+        <button style="background:red; padding:2px 8px;" onclick="closeAIApp()">X</button>
+    </div>
+    <div class="win-body">
         <div class="sidebar">
-            <label>AI Prompt</label>
-            <textarea id="ai-prompt" rows="4" placeholder="e.g. Create a loop that logs 'Hello World' 5 times"></textarea>
-            <button onclick="generateAIBlocks()">Generate Blocks</button>
-            <hr style="border:0; border-top:1px solid #444">
-            <button style="background:#555" onclick="runCode()">▶ Run Script</button>
+            <label style="font-size:12px; color:#aaa;">Select Model (GGUF):</label>
+            <select id="model-select" style="width:100%; margin:8px 0; background:#333; color:white;">
+                <option value="https://huggingface.co/ngxson/tinyllama_split_test/resolve/main/stories15M-q8_0-00001-of-00003.gguf">TinyLlama-15M (Fast)</option>
+            </select>
+            <button id="load-btn" onclick="initWllama()" style="width:100%; margin-bottom:15px;">Initialize Engine</button>
+            <textarea id="prompt-in" placeholder="Ask AI to generate code..." style="width:100%; height:80px; background:#333; color:white; border:none; padding:8px;"></textarea>
+            <button onclick="generateCode()" id="gen-btn" style="width:100%; margin-top:10px;" disabled>Generate Logic</button>
         </div>
-        <div class="main-editor">
-            <div class="block-area" id="blocks-container">
-                <div style="color:#666; text-align:center; margin-top:50px;">Use AI to generate logic blocks...</div>
+        <div class="editor">
+            <div id="blocks-container">
+                <div style="color:#555; text-align:center; margin-top:100px;">Initialize llama.cpp to begin...</div>
             </div>
-            <div class="code-preview" id="code-output">// Generated Code Preview</div>
+            <div id="code-output" class="code-view">// Generated Code</div>
         </div>
     </div>
 </div>
 
 <script>
-/* CORE SYSTEM */
-let winIdx = 0;
-const activeBlocks = [];
+    let wllama = null;
+    const statusEl = document.getElementById('ai-status');
 
-function updateClock() {
-    document.getElementById('clock').innerText = new Date().toLocaleTimeString();
-}
-setInterval(updateClock, 1000);
-updateClock();
+    async function initWllama() {
+        const btn = document.getElementById('load-btn');
+        btn.disabled = true;
+        btn.innerText = "Loading WASM...";
+        statusEl.innerText = "AI Engine: Loading...";
 
-function openApp(type) {
-    winIdx++;
-    const id = `win-${winIdx}`;
-    const win = document.createElement('div');
-    win.className = 'window';
-    win.id = id;
-    win.style.left = (100 + winIdx * 30) + 'px';
-    win.style.top = (100 + winIdx * 30) + 'px';
-    
-    const tpl = document.getElementById(`tpl-${type}`);
-    
-    win.innerHTML = `
-        <div class="win-header" onmousedown="dragWin('${id}')">
-            <span class="win-title">ISPWin-12 - ${type}</span>
-            <div class="win-controls">
-                <div class="win-btn btn-close" onclick="document.getElementById('${id}').remove()"></div>
-            </div>
-        </div>
-        <div class="win-body">${tpl ? tpl.innerHTML : 'App content missing'}</div>
-    `;
-    document.body.appendChild(win);
-    focusWin(id);
-}
-
-/* AI LOGIC & BLOCK ENGINE */
-// Simulated AI - Real implementation would use an API key fetch to a provider like OpenAI
-function generateAIBlocks() {
-    const prompt = document.querySelector('.window:last-child #ai-prompt').value.toLowerCase();
-    const container = document.querySelector('.window:last-child #blocks-container');
-    container.innerHTML = "";
-    activeBlocks.length = 0;
-
-    // Pattern matching simulation of LLM block generation
-    if (prompt.includes("loop") || prompt.includes("times")) {
-        addBlock("Logic", "FOR Loop (5 times)", "for(let i=0; i<5; i++) {", "}");
-    }
-    if (prompt.includes("log") || prompt.includes("print") || prompt.includes("hello")) {
-        addBlock("Action", "Console Log ('Hello')", "console.log('Hello from ISPWin-12');", "");
-    }
-    if (prompt.includes("alert")) {
-        addBlock("Action", "System Alert", "alert('ISPWin-12 System Alert!');", "");
-    }
-    
-    if (container.innerHTML === "") {
-        container.innerHTML = "<div style='color:red'>AI could not parse prompt. Try 'loop' or 'log'.</div>";
-    }
-    renderCode();
-}
-
-function addBlock(type, label, startCode, endCode) {
-    const id = Date.now() + Math.random();
-    activeBlocks.push({ id, type, label, startCode, endCode });
-    updateBlockUI();
-}
-
-function updateBlockUI() {
-    const container = document.querySelector('.window:last-child #blocks-container');
-    container.innerHTML = "";
-    activeBlocks.forEach(b => {
-        const el = document.createElement('div');
-        el.className = `block block-${b.type.toLowerCase()}`;
-        el.innerHTML = `<span>[${b.type}] ${b.label}</span><span class="block-remove" onclick="removeBlock(${b.id})">×</span>`;
-        container.appendChild(el);
-    });
-    renderCode();
-}
-
-function removeBlock(id) {
-    const idx = activeBlocks.findIndex(b => b.id === id);
-    if (idx > -1) activeBlocks.splice(idx, 1);
-    updateBlockUI();
-}
-
-function renderCode() {
-    const preview = document.querySelector('.window:last-child #code-output');
-    let code = "// Auto-generated by ISPWin-12 AI\n";
-    let indent = "";
-    activeBlocks.forEach(b => {
-        code += indent + b.startCode + "\n";
-        if (b.endCode) {
-            indent += "  ";
-            code += indent + "// Block Body\n";
-            indent = indent.slice(0, -2);
-            code += indent + b.endCode + "\n";
+        try {
+            // Initialize wllama from CDN-loaded library
+            const config = {
+                // wllama requires path to its .wasm files (hosted on jadelivr)
+                wllamaPath: 'https://cdn.jsdelivr.net',
+            };
+            wllama = new Wllama(config);
+            
+            const modelUrl = document.getElementById('model-select').value;
+            await wllama.loadModelFromUrl(modelUrl);
+            
+            btn.innerText = "Engine Ready";
+            statusEl.innerText = "AI Engine: Online (Local)";
+            document.getElementById('gen-btn').disabled = false;
+        } catch (e) {
+            alert("Error loading AI: " + e.message);
+            btn.disabled = false;
         }
-    });
-    preview.innerText = code;
-}
-
-function runCode() {
-    const code = document.querySelector('.window:last-child #code-output').innerText;
-    try {
-        eval(code);
-    } catch (e) {
-        alert("Execution Error: " + e.message);
     }
-}
 
-/* WINDOW MANAGEMENT */
-function focusWin(id) {
-    document.querySelectorAll('.window').forEach(w => w.style.zIndex = 10);
-    document.getElementById(id).style.zIndex = 100;
-}
+    async function generateCode() {
+        const prompt = document.getElementById('prompt-in').value;
+        const container = document.getElementById('blocks-container');
+        const output = document.getElementById('code-output');
+        
+        container.innerHTML = "Generating blocks...";
+        
+        // Real llama.cpp inference
+        const response = await wllama.completion(`Instruction: Generate a Javascript function for ${prompt}. Output only the code. Result:`, {
+            n_predict: 100,
+            sampling: { temp: 0.2 }
+        });
 
-function dragWin(id) {
-    const el = document.getElementById(id);
-    let p1 = 0, p2 = 0, p3 = 0, p4 = 0;
-    el.onmousedown = (e) => {
-        focusWin(id);
-        if (e.target.className !== 'win-header') return;
-        p3 = e.clientX; p4 = e.clientY;
+        // Parse result into a block UI
+        container.innerHTML = "";
+        const block = document.createElement('div');
+        block.className = "block";
+        block.innerText = "AI GENERATED LOGIC";
+        container.appendChild(block);
+        
+        output.innerText = response.trim();
+    }
+
+    function openAIApp() { document.getElementById('ai-win').style.display = 'flex'; }
+    function closeAIApp() { document.getElementById('ai-win').style.display = 'none'; }
+
+    function dragWindow(e) {
+        const win = document.getElementById('ai-win');
+        let shiftX = e.clientX - win.getBoundingClientRect().left;
+        let shiftY = e.clientY - win.getBoundingClientRect().top;
         document.onmousemove = (e) => {
-            p1 = p3 - e.clientX; p2 = p4 - e.clientY;
-            p3 = e.clientX; p4 = e.clientY;
-            el.style.top = (el.offsetTop - p2) + "px";
-            el.style.left = (el.offsetLeft - p1) + "px";
+            win.style.left = e.pageX - shiftX + 'px';
+            win.style.top = e.pageY - shiftY + 'px';
         };
-        document.onmouseup = () => { document.onmousemove = null; document.onmouseup = null; };
-    };
-}
+        document.onmouseup = () => document.onmousemove = null;
+    }
 
-/* EXPORT */
-function downloadFile() {
-    const html = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
-    const blob = new Blob([html], { type: "text/html" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = "ispwin-12-os.html";
-    document.body.appendChild(a); a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-}
+    function downloadArtifact() {
+        const blob = new Blob([document.documentElement.outerHTML], { type: "text/html" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "ISPWin12-Pro-Artifact.html";
+        a.click();
+    }
 </script>
 </body>
 </html>
