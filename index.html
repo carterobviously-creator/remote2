@@ -2,151 +2,49 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>ISPWin-12 Pro (llama.cpp Edition)</title>
-    <!-- Core wllama library from CDN -->
-    <script src="https://cdn.jsdelivr.net"></script>
-    <style>
-        :root { --accent: #0078d4; --bg: #0a0a0a; --win-bg: #1e1e1e; }
-        body, html { height: 100%; margin: 0; overflow: hidden; background: var(--bg); font-family: sans-serif; color: white; }
-        
-        /* OS Interface */
-        #desktop { width: 100vw; height: calc(100vh - 40px); position: relative; padding: 20px; }
-        .icon { width: 80px; text-align: center; cursor: pointer; margin-bottom: 20px; }
-        .icon-box { width: 50px; height: 50px; background: var(--accent); border-radius: 10px; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 24px; }
-        
-        /* Window System */
-        .window { position: absolute; width: 800px; height: 500px; background: var(--win-bg); border: 1px solid #444; border-radius: 8px; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 10; }
-        .win-head { background: #2d2d2d; padding: 10px; cursor: move; display: flex; justify-content: space-between; border-radius: 8px 8px 0 0; }
-        .win-body { flex: 1; display: flex; overflow: hidden; }
-        
-        /* AI App Layout */
-        .sidebar { width: 280px; background: #252526; padding: 15px; border-right: 1px solid #333; overflow-y: auto; }
-        .editor { flex: 1; background: #111; display: flex; flex-direction: column; }
-        #blocks-container { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .code-view { height: 120px; background: #000; color: #0f0; font-family: monospace; padding: 10px; border-top: 1px solid #333; font-size: 12px; }
-        
-        /* Blocks */
-        .block { padding: 12px; border-radius: 6px; font-weight: bold; background: #4c97ff; border-left: 5px solid #2979ff; }
-        
-        /* Taskbar */
-        #taskbar { position: fixed; bottom: 0; width: 100%; height: 40px; background: rgba(0,0,0,0.8); display: flex; align-items: center; padding: 0 15px; border-top: 1px solid #333; }
-        button { background: var(--accent); color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; }
-        .status-pill { font-size: 12px; margin-left: 15px; padding: 2px 8px; border-radius: 10px; background: #444; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISPWin 12 Pro</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div id="desktop">
-    <div class="icon" onclick="openAIApp()">
-        <div class="icon-box">🧠</div>
-        <div style="margin-top:5px; font-size:12px;">AI CodeGen</div>
-    </div>
-</div>
+    <div class="container">
+        <header>
+            <h1>ISPWin 12 Pro</h1>
+            <button class="start-button">Start</button>
+        </header>
 
-<div id="taskbar">
-    <button onclick="downloadArtifact()">💾 Save OS</button>
-    <div id="ai-status" class="status-pill">AI Engine: Offline</div>
-</div>
-
-<!-- AI App Template -->
-<div id="ai-win" class="window" style="display:none; left:100px; top:50px;">
-    <div class="win-head" onmousedown="dragWindow(event)">
-        <span>ISPWin Pro - llama.cpp AI</span>
-        <button style="background:red; padding:2px 8px;" onclick="closeAIApp()">X</button>
-    </div>
-    <div class="win-body">
-        <div class="sidebar">
-            <label style="font-size:12px; color:#aaa;">Select Model (GGUF):</label>
-            <select id="model-select" style="width:100%; margin:8px 0; background:#333; color:white;">
-                <option value="https://huggingface.co/ngxson/tinyllama_split_test/resolve/main/stories15M-q8_0-00001-of-00003.gguf">TinyLlama-15M (Fast)</option>
-            </select>
-            <button id="load-btn" onclick="initWllama()" style="width:100%; margin-bottom:15px;">Initialize Engine</button>
-            <textarea id="prompt-in" placeholder="Ask AI to generate code..." style="width:100%; height:80px; background:#333; color:white; border:none; padding:8px;"></textarea>
-            <button onclick="generateCode()" id="gen-btn" style="width:100%; margin-top:10px;" disabled>Generate Logic</button>
-        </div>
-        <div class="editor">
-            <div id="blocks-container">
-                <div style="color:#555; text-align:center; margin-top:100px;">Initialize llama.cpp to begin...</div>
+        <div class="desktop">
+            <div class="taskbar">
+                <div class="taskbar-icon">
+                    <img src="icons/browser.png" alt="Browser" class="icon">
+                    <span class="icon-label">ISP Win 12 Pro</span>
+                </div>
+                <div class="taskbar-time">
+                    <span class="time">10:30 AM</span>
+                </div>
+                <div class="taskbar-wi-fi">
+                    <span class="wifi-icon">Wi-Fi</span>
+                    <span class="wifi-status">Connected</span>
+                </div>
             </div>
-            <div id="code-output" class="code-view">// Generated Code</div>
+
+            <div class="desktop-windows">
+                <div class="window-container">
+                    <div class="window-content">
+                        <div class="window-title">
+                            <span class="window-title-label">Browser</span>
+                            <span class="window-title-buttons">Minimize | Maximize | Close</span>
+                        </div>
+                        <div class="file-list">
+                            <span class="file-list-item">File 1</span>
+                            <span class="file-list-item">File 2</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
 
-<script>
-    let wllama = null;
-    const statusEl = document.getElementById('ai-status');
-
-    async function initWllama() {
-        const btn = document.getElementById('load-btn');
-        btn.disabled = true;
-        btn.innerText = "Loading WASM...";
-        statusEl.innerText = "AI Engine: Loading...";
-
-        try {
-            // Initialize wllama from CDN-loaded library
-            const config = {
-                // wllama requires path to its .wasm files (hosted on jadelivr)
-                wllamaPath: 'https://cdn.jsdelivr.net',
-            };
-            wllama = new Wllama(config);
-            
-            const modelUrl = document.getElementById('model-select').value;
-            await wllama.loadModelFromUrl(modelUrl);
-            
-            btn.innerText = "Engine Ready";
-            statusEl.innerText = "AI Engine: Online (Local)";
-            document.getElementById('gen-btn').disabled = false;
-        } catch (e) {
-            alert("Error loading AI: " + e.message);
-            btn.disabled = false;
-        }
-    }
-
-    async function generateCode() {
-        const prompt = document.getElementById('prompt-in').value;
-        const container = document.getElementById('blocks-container');
-        const output = document.getElementById('code-output');
-        
-        container.innerHTML = "Generating blocks...";
-        
-        // Real llama.cpp inference
-        const response = await wllama.completion(`Instruction: Generate a Javascript function for ${prompt}. Output only the code. Result:`, {
-            n_predict: 100,
-            sampling: { temp: 0.2 }
-        });
-
-        // Parse result into a block UI
-        container.innerHTML = "";
-        const block = document.createElement('div');
-        block.className = "block";
-        block.innerText = "AI GENERATED LOGIC";
-        container.appendChild(block);
-        
-        output.innerText = response.trim();
-    }
-
-    function openAIApp() { document.getElementById('ai-win').style.display = 'flex'; }
-    function closeAIApp() { document.getElementById('ai-win').style.display = 'none'; }
-
-    function dragWindow(e) {
-        const win = document.getElementById('ai-win');
-        let shiftX = e.clientX - win.getBoundingClientRect().left;
-        let shiftY = e.clientY - win.getBoundingClientRect().top;
-        document.onmousemove = (e) => {
-            win.style.left = e.pageX - shiftX + 'px';
-            win.style.top = e.pageY - shiftY + 'px';
-        };
-        document.onmouseup = () => document.onmousemove = null;
-    }
-
-    function downloadArtifact() {
-        const blob = new Blob([document.documentElement.outerHTML], { type: "text/html" });
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = "ISPWin12-Pro-Artifact.html";
-        a.click();
-    }
-</script>
-</body>
+        <script src="script.js"></script>
+    </body>
 </html>
