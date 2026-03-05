@@ -1,50 +1,273 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ISPWin 12 Pro</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>ISPWin 12 Pro – Bootloader</title>
+<style>
+/*------------------------------------------------------
+  Global variables & reset
+------------------------------------------------------*/
+:root{
+  --color-dark:#0a0a1a;
+  --color-neon:#0fffb5;
+  --color-link:#b50fff;
+  --color-magenta:#ff0fb5;
+  --color-text:#e0e0ff;
+  --color-bg:#001335;
+}
+
+/* fullscreen, typewriter font for console */
+body{
+  margin:0;
+  height:100vh;
+  background: radial-gradient(circle at 50% 50%, #001440 0%, #001336 35%, #001223 100%);
+  color:var(--color-text);
+  font-family:'Segoe UI','Consolas',monospace;
+  overflow:hidden;
+  position:relative;
+}
+
+/*------------------------------------------------------
+  Boot phases (hidden by default)
+------------------------------------------------------*/
+.phase{
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  visibility:hidden;
+  opacity:0;
+  transition:opacity .6s ease;
+}
+
+/* when a phase is “active” it becomes visible */
+.phase.active{visibility:visible; opacity:1;}
+
+/*------------------------------------------------------
+  Phase 1 – POST / BIOS
+------------------------------------------------------*/
+#post{
+  background:rgba(0,0,0,.8);
+  padding:20px 30px;
+  border-radius:8px;
+  text-align:left;
+  width:90%; max-width:600px;
+  overflow:hidden;
+  position:relative;
+}
+
+/* glow of scan‑lines */
+#post::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background: repeating-linear-gradient(-45deg,rgba(255,255,255,.1),rgba(255,255,255,.1) 2px,transparent 2px,transparent 4px);
+  pointer-events:none;
+  opacity:.5;
+}
+
+/* The actual console output */
+#postText{min-height:3.5em;}
+
+/*------------------------------------------------------
+  Phase 2 – Boot logo
+------------------------------------------------------*/
+#logo{
+  text-align:center;
+  color:var(--color-neon);
+}
+#logoMain{
+  width:180px;
+  height:180px;
+  border-radius:50%;
+  border:6px solid var(--color-neon);
+  box-shadow:0 0 15px 5px var(--color-neon), 0 0 30px 10px var(--color-magenta);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:1.2rem;
+  background: radial-gradient(circle at 50% 30%, #000000, #001336);
+  margin-bottom:15px;
+}
+
+/* progress bar wrapper */
+#progressWrapper{
+  width:80%; max-width:400px;
+  height:12px;
+  background:#111;
+  border-radius:6px;
+  margin:15px 0;
+  overflow:hidden;
+  box-shadow:inset 0 0 5px rgba(0,0,0,.5);
+}
+
+/* actual bar */
+#progress{height:100%; width:0%; background:linear-gradient(90deg,var(--color-neon),var(--color-magenta));}
+@keyframes progressAnim{0%{width:0%;}100%{width:100%;}}
+
+/* rotating status */
+#status{color:var(--color-link); font-size:1rem; min-height:1.4rem;}
+
+/*------------------------------------------------------
+  Phase 4 – Ready screen
+------------------------------------------------------*/
+#ready{
+  text-align:center;
+  font-size:1.1rem;
+}
+#ready h1{
+  margin:0 0 1.5rem;
+  font-size:1.8rem;
+  color:var(--color-neon);
+}
+#startBtn{
+  font-family:inherit;
+  padding:12px 24px;
+  font-size:1.2rem;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  background:var(--color-neon);
+  color:var(--color-dark);
+  transition:background .3s ease;
+}
+#startBtn:hover{background:var(--color-magenta);}
+
+/*------------------------------------------------------
+  Phase 5 – Launching message
+------------------------------------------------------*/
+#launch{
+  text-align:center;
+  font-size:1.8rem;
+  color:var(--color-magenta);
+}
+</style>
 </head>
 <body>
 
-    <div class="container">
-        <header>
-            <h1>ISPWin 12 Pro</h1>
-            <button class="start-button">Start</button>
-        </header>
+<div id="bootloader">
 
-        <div class="desktop">
-            <div class="taskbar">
-                <div class="taskbar-icon">
-                    <img src="icons/browser.png" alt="Browser" class="icon">
-                    <span class="icon-label">ISP Win 12 Pro</span>
-                </div>
-                <div class="taskbar-time">
-                    <span class="time">10:30 AM</span>
-                </div>
-                <div class="taskbar-wi-fi">
-                    <span class="wifi-icon">Wi-Fi</span>
-                    <span class="wifi-status">Connected</span>
-                </div>
-            </div>
+  <!-- 1. POST screen -->
+  <div id="post" class="phase" data-phase="post">
+    <div id="postText"></div>
+  </div>
 
-            <div class="desktop-windows">
-                <div class="window-container">
-                    <div class="window-content">
-                        <div class="window-title">
-                            <span class="window-title-label">Browser</span>
-                            <span class="window-title-buttons">Minimize | Maximize | Close</span>
-                        </div>
-                        <div class="file-list">
-                            <span class="file-list-item">File 1</span>
-                            <span class="file-list-item">File 2</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <!-- 2. Logo + progress -->
+  <div id="logo" class="phase" data-phase="logo">
+    <div id="logoMain">ISPWin 12 Pro</div>
+    <div id="progressWrapper"><div id="progress"></div></div>
+    <div id="status"></div>
+  </div>
 
-        <script src="script.js"></script>
-    </body>
+  <!-- 3. Ready -->
+  <div id="ready" class="phase" data-phase="ready">
+    <h1>ISPWin 12 Pro is ready.</h1>
+    <button id="startBtn">Start ISPWin 12 Pro</button>
+  </div>
+
+  <!-- 4. Launching message -->
+  <div id="launch" class="phase" data-phase="launch">
+    <h1>Launching desktop…</h1>
+  </div>
+
+</div>
+
+<script>
+/*------------------------------------------------------
+  Helper functions
+------------------------------------------------------*/
+const delay = ms => new Promise(r => setTimeout(r, ms));
+
+/*------------------------------------------------------
+  POST typing effect
+------------------------------------------------------*/
+const postLines = [
+  'ISP Firmware v3.9.1',
+  'Initializing system memory… OK',
+  'Detecting storage devices… OK',
+  'Loading ISPWin 12 Pro kernel…',
+  'Starting graphical subsystem…',
+];
+
+async function typeLines(lines, lineDelay = 800, charDelay = 70) {
+  const postText = document.getElementById('postText');
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    for (let j = 0; j < line.length; j++) {
+      postText.innerHTML += line[j];
+      await delay(charDelay);
+    }
+    postText.innerHTML += '<br>';
+    await delay(lineDelay);
+  }
+}
+
+/*------------------------------------------------------
+  Phase management
+------------------------------------------------------*/
+function showPhase(id) {
+  document.querySelectorAll('.phase').forEach(el => el.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+/*------------------------------------------------------
+  Boot sequence
+------------------------------------------------------*/
+async function runBoot() {
+  showPhase('post');          // start with the POST screen
+  await typeLines(postLines); // simulate typing text
+  startLogo();                // move to boot logo
+}
+
+/*------------------------------------------------------
+  Logo + loading animation
+------------------------------------------------------*/
+function startLogo() {
+  showPhase('logo');
+
+  /* start progress bar animation */
+  const progress = document.getElementById('progress');
+  progress.style.animation = 'progressAnim 5s linear forwards';
+
+  /* rotating status texts */
+  const statusMsgs = [
+    'Preparing desktop environment…',
+    'Mounting user profile…',
+    'Starting ISPWin services…',
+  ];
+  let idx = 0;
+  const statusTimer = setInterval(() => {
+    document.getElementById('status').textContent = statusMsgs[idx++];
+    if (idx >= statusMsgs.length) idx = 0;
+  }, 1200);
+
+  /* after progress finishes go to ready screen */
+  setTimeout(() => {
+    clearInterval(statusTimer);
+    showPhase('ready');
+  }, 5000); // matches progressAnim duration
+}
+
+/*------------------------------------------------------
+  Launch button
+------------------------------------------------------*/
+document.getElementById('startBtn').addEventListener('click', () => {
+  showPhase('launch');
+  // after a couple of seconds we can hide the entire loader
+  setTimeout(() => {
+    document.getElementById('bootloader').style.display = 'none';
+    /*  Here you would load the real ISPWin desktop
+        e.g., location.href='ispwin-desktop.html' */
+  }, 2000);
+});
+
+/*------------------------------------------------------
+  Begin the whole thing once page is ready
+------------------------------------------------------*/
+runBoot();
+
+</script>
+</body>
 </html>
