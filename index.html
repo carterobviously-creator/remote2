@@ -1,305 +1,275 @@
-<!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8" /> <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <title>Block Coding with LLaMA.cpp AI and TurboWarp</title> <style> body { font-family: Arial, sans-serif; background: #121212; color: #eee; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; } header { background: #222; width: 100%; padding: 1rem; text-align: center; font-size: 1.5rem; color: #0af; user-select: none; } #block-editor { margin: 1rem; width: 90vw; max-width: 900px; height: 500px; border: 2px solid #0af; border-radius: 8px; background: #1e1e1e; display: flex; justify-content: center; align-items: center; color: #666; font-size: 1.2rem; text-align: center; padding: 1rem; } #output { margin: 1rem; width: 90vw; max-width: 900px; height: 300px; border: 2px solid #0af; border-radius: 8px; background: #000; color: #0f0; font-family: monospace; overflow-y: auto; padding: 1rem; white-space: pre-wrap; } button { background: #0af; border: none; color: #fff; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 1rem; margin-top: 0.5rem; user-select: none; transition: background-color 0.3s ease; } button:hover { background: #08c; } footer { margin-top: auto; padding: 1rem; font-size: 0.9rem; color: #555; user-select: none; } </style> </head> <body> <header>Block Coding with LLaMA.cpp AI and TurboWarp</header>
+<!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8" /> <meta name="viewport" content="width=device-width, initial-scale=1" /> <title>Block Coding with LLaMA.cpp AI and TurboWarp</title> <script src="https://unpkg.com/blockly/blockly.min.js"></script> <style> body { font-family: Arial, sans-serif; background: #121212; color: #eee; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; } header { background: #222; width: 100%; padding: 1rem; text-align: center; font-size: 1.5rem; color: #0af; user-select: none; } #blocklyDiv { height: 400px; width: 90vw; max-width: 900px; border: 2px solid #0af; border-radius: 8px; background: #1e1e1e; } #output { margin: 1rem; width: 90vw; max-width: 900px; height: 200px; border: 2px solid #0af; border-radius: 8px; background: #000; color: #0f0; font-family: monospace; overflow-y: auto; padding: 1rem; white-space: pre-wrap; } button { background: #0af; border: none; color: #fff; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 1rem; margin-top: 0.5rem; user-select: none; transition: background-color 0.3s ease; } button:hover { background: #08c; } footer { margin-top: auto; padding: 1rem; font-size: 0.9rem; color: #555; user-select: none; } </style> </head> <body> <header>Block Coding with LLaMA.cpp AI and TurboWarp</header>
 
-<div id="block-editor">
-    <p>This is where the block coding interface would be integrated (e.g., Scratch or TurboWarp blocks).</p>
-</div>
+<div id="blocklyDiv"></div> <button id="generate-code">Generate Game Code with AI</button> <pre id="output">Your generated code will appear here...</pre>
+
+<script> const workspace = Blockly.inject('blocklyDiv', { toolbox: <xml xmlns="https://developers.google.com/blockly/xml">       <block type="controls_if"></block>       <block type="logic_compare"></block>       <block type="math_number"></block>       <block type="math_arithmetic"></block>       <block type="text"></block>       <block type="text_print"></block>       <block type="variables_get"></block>       <block type="variables_set"></block>       <block type="controls_repeat_ext"></block>     </xml>, theme: Blockly.Themes.Classic });
+
+async function generateGameCode() { const output = document.getElementById('output'); output.textContent = 'Generating game code using LLaMA.cpp AI... (simulation)';
+
+// Simulate AI processing delay
+await new Promise(resolve => setTimeout(resolve, 1500));
+
+// Get JavaScript code from blocks
+const code = Blockly.JavaScript.workspaceToCode(workspace);
+
+// Simulate AI enhancement by appending a welcome message
+const aiEnhancedCode = `// AI-enhanced game code
+
+${code} console.log('Welcome to your AI-generated game!');`;
+
+output.textContent = aiEnhancedCode || 'No blocks to generate code from.';
+
+}
+
+document.getElementById('generate-code').addEventListener('click', generateGameCode);
+
+// Note: To compile with TurboWarp, export your blocks project and use TurboWarp's online compiler. </script>
+
+<footer>Powered by LLaMA.cpp AI simulation & TurboWarp compiler integration</footer> </body> </html><!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8" /> <meta name="viewport" content="width=device-width, initial-scale=1" /> <title>Block Coding with LLaMA.cpp AI and TurboWarp</title> <script src="https://unpkg.com/blockly/blockly.min.js"></script> <style> body { font-family: Arial, sans-serif; background: #121212; color: #eee; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; } header { background: #222; width: 100%; padding: 1rem; text-align: center; font-size: 1.5rem; color: #0af; user-select: none; } #blocklyDiv { height: 400px; width: 90vw; max-width: 900px; border: 2px solid #0af; border-radius: 8px; background: #1e1e1e; } #output { margin: 1rem; width: 90vw; max-width: 900px; height: 200px; border: 2px solid #0af; border-radius: 8px; background: #000; color: #0f0; font-family: monospace; overflow-y: auto; padding: 1rem; white-space: pre-wrap; } button { background: #0af; border: none; color: #fff; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 1rem; margin-top: 0.5rem; user-select: none; transition: background-color 0.3s ease; } button:hover { background: #08c; } footer { margin-top: auto; padding: 1rem; font-size: 0.9rem; color: #555; user-select: none; } </style> </head> <body> <header>Block Coding with LLaMA.cpp AI and TurboWarp</header>
+
+<div id="blocklyDiv"></div> <button id="generate-code">Generate Game Code with AI</button> <pre id="output">Your generated code will appear here...</pre>
+
+<script> const workspace = Blockly.inject('blocklyDiv', { toolbox: <xml xmlns="https://developers.google.com/blockly/xml">       <block type="controls_if"></block>       <block type="logic_compare"></block>       <block type="math_number"></block>       <block type="math_arithmetic"></block>       <block type="text"></block>       <block type="text_print"></block>       <block type="variables_get"></block>       <block type="variables_set"></block>       <block type="controls_repeat_ext"></block>     </xml>, theme: Blockly.Themes.Classic });
+
+async function generateGameCode() { const output = document.getElementById('output'); output.textContent = 'Generating game code using LLaMA.cpp AI... (simulation)';
+
+// Simulate AI processing delay
+await new Promise(resolve => setTimeout(resolve, 1500));
+
+// Get JavaScript code from blocks
+const code = Blockly.JavaScript.workspaceToCode(workspace);
+
+// Simulate AI enhancement by appending a welcome message
+const aiEnhancedCode = `// AI-enhanced game code
+
+${code} console.log('Welcome to your AI-generated game!');`;
+
+output.textContent = aiEnhancedCode || 'No blocks to generate code from.';
+
+}
+
+document.getElementById('generate-code').addEventListener('click', generateGameCode);
+
+// Note: To compile with TurboWarp, export your blocks project and use TurboWarp's online compiler. </script>
+
+<footer>Powered by LLaMA.cpp AI simulation & TurboWarp compiler integration</footer> </body> </html><!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8" /> <meta name="viewport" content="width=device-width, initial-scale=1" /> <title>Block Coding with LLaMA.cpp AI and TurboWarp</title> <script src="https://unpkg.com/blockly/blockly.min.js"></script> <style> body { font-family: Arial, sans-serif; background: #121212; color: #eee; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; } header { background: #222; width: 100%; padding: 1rem; text-align: center; font-size: 1.5rem; color: #0af; user-select: none; } #blocklyDiv { height: 400px; width: 90vw; max-width: 900px; border: 2px solid #0af; border-radius: 8px; background: #1e1e1e; } #output { margin: 1rem; width: 90vw; max-width: 900px; height: 200px; border: 2px solid #0af; border-radius: 8px; background: #000; color: #0f0; font-family: monospace; overflow-y: auto; padding: 1rem; white-space: pre-wrap; } button { background: #0af; border: none; color: #fff; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 1rem; margin-top: 0.5rem; user-select: none; transition: background-color 0.3s ease; } button:hover { background: #08c; } footer { margin-top: auto; padding: 1rem; font-size: 0.9rem; color: #555; user-select: none; } </style> </head> <body> <header>Block Coding with LLaMA.cpp AI and TurboWarp</header>
+
+<div id="blocklyDiv"></div> <button id="generate-code">Generate Game Code with AI</button> <pre id="output">Your generated code will appear here...</pre>
+
+<script> const workspace = Blockly.inject('blocklyDiv', { toolbox: <xml xmlns="https://developers.google.com/blockly/xml">       <block type="controls_if"></block>       <block type="logic_compare"></block>       <block type="math_number"></block>       <block type="math_arithmetic"></block>       <block type="text"></block>       <block type="text_print"></block>       <block type="variables_get"></block>       <block type="variables_set"></block>       <block type="controls_repeat_ext"></block>     </xml>, theme: Blockly.Themes.Classic });
+
+async function generateGameCode() { const output = document.getElementById('output'); output.textContent = 'Generating game code using LLaMA.cpp AI... (simulation)';
+
+// Simulate AI processing delay
+await new Promise(resolve => setTimeout(resolve, 1500));
+
+// Get JavaScript code from blocks
+const code = Blockly.JavaScript.workspaceToCode(workspace);
+
+// Simulate AI enhancement by appending a welcome message
+const aiEnhancedCode = `// AI-enhanced game code
+
+${code} console.log('Welcome to your AI-generated game!');`;
+
+output.textContent = aiEnhancedCode || 'No blocks to generate code from.';
+
+}
+
+document.getElementById('generate-code').addEventListener('click', generateGameCode);
+
+// Note: To compile with TurboWarp, export your blocks project and use TurboWarp's online compiler. </script>
+
+<footer>Powered by LLaMA.cpp AI simulation & TurboWarp compiler integration</footer> </body> </html><!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8" /> <meta name="viewport" content="width=device-width, initial-scale=1" /> <title>Block Coding with LLaMA.cpp AI and TurboWarp</title> <script src="https://unpkg.com/blockly/blockly.min.js"></script> <style> body { font-family: Arial, sans-serif; background: #121212; color: #eee; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; } header { background: #222; width: 100%; padding: 1rem; text-align: center; font-size: 1.5rem; color: #0af; user-select: none; } #blocklyDiv { height: 400px; width: 90vw; max-width: 900px; border: 2px solid #0af; border-radius: 8px; background: #1e1e1e; } #output { margin: 1rem; width: 90vw; max-width: 900px; height: 200px; border: 2px solid #0af; border-radius: 8px; background: #000; color: #0f0; font-family: monospace; overflow-y: auto; padding: 1rem; white-space: pre-wrap; } button { background: #0af; border: none; color: #fff; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 1rem; margin-top: 0.5rem; user-select: none; transition: background-color 0.3s ease; } button:hover { background: #08c; } footer { margin-top: auto; padding: 1rem; font-size: 0.9rem; color: #555; user-select: none; } </style> </head> <body> <header>Block Coding with LLaMA.cpp AI and TurboWarp</header>
+
+<div id="blocklyDiv"></div> <button id="generate-code">Generate Game Code with AI</button> <pre id="output">Your generated code will appear here...</pre>
+
+<script> const workspace = Blockly.inject('blocklyDiv', { toolbox: <xml xmlns="https://developers.google.com/blockly/xml">       <block type="controls_if"></block>       <block type="logic_compare"></block>       <block type="math_number"></block>       <block type="math_arithmetic"></block>       <block type="text"></block>       <block type="text_print"></block>       <block type="variables_get"></block>       <block type="variables_set"></block>       <block type="controls_repeat_ext"></block>     </xml>, theme: Blockly.Themes.Classic });
+
+async function generateGameCode() { const output = document.getElementById('output'); output.textContent = 'Generating game code using LLaMA.cpp AI... (simulation)';
+
+// Simulate AI processing delay
+await new Promise(resolve => setTimeout(resolve, 1500));
+
+// Get JavaScript code from blocks
+const code = Blockly.JavaScript.workspaceToCode(workspace);
+
+// Simulate AI enhancement by appending a welcome message
+const aiEnhancedCode = `// AI-enhanced game code
+
+${code} console.log('Welcome to your AI-generated game!');`;
+
+output.textContent = aiEnhancedCode || 'No blocks to generate code from.';
+
+}
+
+document.getElementById('generate-code').addEventListener('click', generateGameCode);
+
+// Note: To compile with TurboWarp, export your blocks project and use TurboWarp's online compiler. </script>
+
+<footer>Powered by LLaMA.cpp AI simulation & TurboWarp compiler integration</footer> </body> </html><!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8" /> <meta name="viewport" content="width=device-width, initial-scale=1" /> <title>Block Coding with LLaMA.cpp AI and TurboWarp</title> <script src="https://unpkg.com/blockly/blockly.min.js"></script> <style> body { font-family: Arial, sans-serif; background: #121212; color: #eee; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; } header { background: #222; width: 100%; padding: 1rem; text-align: center; font-size: 1.5rem; color: #0af; user-select: none; } #blocklyDiv { height: 400px; width: 90vw; max-width: 900px; border: 2px solid #0af; border-radius: 8px; background: #1e1e1e; } #output { margin: 1rem; width: 90vw; max-width: 900px; height: 200px; border: 2px solid #0af; border-radius: 8px; background: #000; color: #0f0; font-family: monospace; overflow-y: auto; padding: 1rem; white-space: pre-wrap; } button { background: #0af; border: none; color: #fff; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 1rem; margin-top: 0.5rem; user-select: none; transition: background-color 0.3s ease; } button:hover { background: #08c; } footer { margin-top: auto; padding: 1rem; font-size: 0.9rem; color: #555; user-select: none; } </style> </head> <body> <header>Block Coding with LLaMA.cpp AI and TurboWarp</header>
+
+<div id="blocklyDiv"></div> <button id="generate-code">Generate Game Code with AI</button> <pre id="output">Your generated code will appear here...</pre>
+
+<script> const workspace = Blockly.inject('blocklyDiv', { toolbox: <xml xmlns="https://developers.google.com/blockly/xml">       <block type="controls_if"></block>       <block type="logic_compare"></block>       <block type="math_number"></block>       <block type="math_arithmetic"></block>       <block type="text"></block>       <block type="text_print"></block>       <block type="variables_get"></block>       <block type="variables_set"></block>       <block type="controls_repeat_ext"></block>     </xml>, theme: Blockly.Themes.Classic });
+
+async function generateGameCode() { const output = document.getElementById('output'); output.textContent = 'Generating game code using LLaMA.cpp AI... (simulation)';
+
+// Simulate AI processing delay
+await new Promise(resolve => setTimeout(resolve, 1500));
+
+// Get JavaScript code from blocks
+const code = Blockly.JavaScript.workspaceToCode(workspace);
+
+// Simulate AI enhancement by appending a welcome message
+const aiEnhancedCode = `// AI-enhanced game code
+
+${code} console.log('Welcome to your AI-generated game!');`;
+
+output.textContent = aiEnhancedCode || 'No blocks to generate code from.';
+
+}
+
+document.getElementById('generate-code').addEventListener('click', generateGameCode);
+
+// Note: To compile with TurboWarp, export your blocks project and use TurboWarp's online compiler. </script>
+
+<footer>Powered by LLaMA.cpp AI simulation & TurboWarp compiler integration</footer> </body> </html><!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8" /> <meta name="viewport" content="width=device-width, initial-scale=1" /> <title>Block Coding with LLaMA.cpp AI and TurboWarp</title> <script src="https://unpkg.com/blockly/blockly.min.js"></script> <style> body { font-family: Arial, sans-serif; background: #121212; color: #eee; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; } header { background: #222; width: 100%; padding: 1rem; text-align: center; font-size: 1.5rem; color: #0af; user-select: none; } #blocklyDiv { height: 400px; width: 90vw; max-width: 900px; border: 2px solid #0af; border-radius: 8px; background: #1e1e1e; } #output { margin: 1rem; width: 90vw; max-width: 900px; height: 200px; border: 2px solid #0af; border-radius: 8px; background: #000; color: #0f0; font-family: monospace; overflow-y: auto; padding: 1rem; white-space: pre-wrap; } button { background: #0af; border: none; color: #fff; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 1rem; margin-top: 0.5rem; user-select: none; transition: background-color 0.3s ease; } button:hover { background: #08c; } footer { margin-top: auto; padding: 1rem; font-size: 0.9rem; color: #555; user-select: none; } </style> </head> <body> <header>Block Coding with LLaMA.cpp AI and TurboWarp</header>
+
+<div id="blocklyDiv"></div> <button id="generate-code">Generate Game Code with AI</button> <pre id="output">Your generated code will appear here...</pre>
+
+<script> const workspace = Blockly.inject('blocklyDiv', { toolbox: <xml xmlns="https://developers.google.com/blockly/xml">       <block type="controls_if"></block>       <block type="logic_compare"></block>       <block type="math_number"></block>       <block type="math_arithmetic"></block>       <block type="text"></block>       <block type="text_print"></block>       <block type="variables_get"></block>       <block type="variables_set"></block>       <block type="controls_repeat_ext"></block>     </xml>, theme: Blockly.Themes.Classic });
+
+async function generateGameCode() { const output = document.getElementById('output'); output.textContent = 'Generating game code using LLaMA.cpp AI... (simulation)';
+
+// Simulate AI processing delay
+await new Promise(resolve => setTimeout(resolve, 1500));
+
+// Get JavaScript code from blocks
+const code = Blockly.JavaScript.workspaceToCode(workspace);
+
+// Simulate AI enhancement by appending a welcome message
+const aiEnhancedCode = `// AI-enhanced game code
+
+${code} console.log('Welcome to your AI-generated game!');`;
+
+output.textContent = aiEnhancedCode || 'No blocks to generate code from.';
+
+}
+
+document.getElementById('generate-code').addEventListener('click', generateGameCode);
+
+// Note: To compile with TurboWarp, export your blocks project and use TurboWarp's online compiler. </script>
+
+<footer>Powered by LLaMA.cpp AI simulation & TurboWarp compiler integration</footer> </body> </html><!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8" /> <meta name="viewport" content="width=device-width, initial-scale=1" /> <title>Block Coding with LLaMA.cpp AI and TurboWarp</title> <script src="https://unpkg.com/blockly/blockly.min.js"></script> <style> body { font-family: Arial, sans-serif; background: #121212; color: #eee; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; } header { background: #222; width: 100%; padding: 1rem; text-align: center; font-size: 1.5rem; color: #0af; user-select: none; } #blocklyDiv { height: 400px; width: 90vw; max-width: 900px; border: 2px solid #0af; border-radius: 8px; background: #1e1e1e; } #output { margin: 1rem; width: 90vw; max-width: 900px; height: 200px; border: 2px solid #0af; border-radius: 8px; background: #000; color: #0f0; font-family: monospace; overflow-y: auto; padding: 1rem; white-space: pre-wrap; } button { background: #0af; border: none; color: #fff; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 1rem; margin-top: 0.5rem; user-select: none; transition: background-color 0.3s ease; } button:hover { background: #08c; } footer { margin-top: auto; padding: 1rem; font-size: 0.9rem; color: #555; user-select: none; } </style> </head> <body> <header>Block Coding with LLaMA.cpp AI and TurboWarp</header>
+
+<div id="blocklyDiv"></div> <button id="generate-code">Generate Game Code with AI</button> <pre id="output">Your generated code will appear here...</pre>
+
+<script> const workspace = Blockly.inject('blocklyDiv', { toolbox: <xml xmlns="https://developers.google.com/blockly/xml">       <block type="controls_if"></block>       <block type="logic_compare"></block>       <block type="math_number"></block>       <block type="math_arithmetic"></block>       <block type="text"></block>       <block type="text_print"></block>       <block type="variables_get"></block>       <block type="variables_set"></block>       <block type="controls_repeat_ext"></block>     </xml>, theme: Blockly.Themes.Classic });
+
+async function generateGameCode() { const output = document.getElementById('output'); output.textContent = 'Generating game code using LLaMA.cpp AI... (simulation)';
+
+// Simulate AI processing delay
+await new Promise(resolve => setTimeout(resolve, 1500));
+
+// Get JavaScript code from blocks
+const code = Blockly.JavaScript.workspaceToCode(workspace);
+
+// Simulate AI enhancement by appending a welcome message
+const aiEnhancedCode = `// AI-enhanced game code
+
+${code} console.log('Welcome to your AI-generated game!');`;
+
+output.textContent = aiEnhancedCode || 'No blocks to generate code from.';
+
+}
+
+document.getElementById('generate-code').addEventListener('click', generateGameCode);
+
+// Note: To compile with TurboWarp, export your blocks project and use TurboWarp's online compiler. </script>
+
+<footer>Powered by LLaMA.cpp AI simulation & TurboWarp compiler integration</footer> </body> </html><!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8" /> <meta name="viewport" content="width=device-width, initial-scale=1" /> <title>Block Coding with LLaMA.cpp AI and TurboWarp</title> <script src="https://unpkg.com/blockly/blockly.min.js"></script> <style> body { font-family: Arial, sans-serif; background: #121212; color: #eee; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; } header { background: #222; width: 100%; padding: 1rem; text-align: center; font-size: 1.5rem; color: #0af; user-select: none; } #blocklyDiv { height: 400px; width: 90vw; max-width: 900px; border: 2px solid #0af; border-radius: 8px; background: #1e1e1e; } #output { margin: 1rem; width: 90vw; max-width: 900px; height: 200px; border: 2px solid #0af; border-radius: 8px; background: #000; color: #0f0; font-family: monospace; overflow-y: auto; padding: 1rem; white-space: pre-wrap; } button { background: #0af; border: none; color: #fff; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 1rem; margin-top: 0.5rem; user-select: none; transition: background-color 0.3s ease; } button:hover { background: #08c; } footer { margin-top: auto; padding: 1rem; font-size: 0.9rem; color: #555; user-select: none; } </style> </head> <body> <header>Block Coding with LLaMA.cpp AI and TurboWarp</header>
+
+<div id="blocklyDiv"></div> <button id="generate-code">Generate Game Code with AI</button> <pre id="output">Your generated code will appear here...</pre>
+
+<script> const workspace = Blockly.inject('blocklyDiv', { toolbox: <xml xmlns="https://developers.google.com/blockly/xml">       <block type="controls_if"></block>       <block type="logic_compare"></block>       <block type="math_number"></block>       <block type="math_arithmetic"></block>       <block type="text"></block>       <block type="text_print"></block>       <block type="variables_get"></block>       <block type="variables_set"></block>       <block type="controls_repeat_ext"></block>     </xml>, theme: Blockly.Themes.Classic });
+
+async function generateGameCode() { const output = document.getElementById('output'); output.textContent = 'Generating game code using LLaMA.cpp AI... (simulation)';
+
+// Simulate AI processing delay
+await new Promise(resolve => setTimeout(resolve, 1500));
+
+// Get JavaScript code from blocks
+const code = Blockly.JavaScript.workspaceToCode(workspace);
+
+// Simulate AI enhancement by appending a welcome message
+const aiEnhancedCode = `// AI-enhanced game code
+
+${code} console.log('Welcome to your AI-generated game!');`;
+
+output.textContent = aiEnhancedCode || 'No blocks to generate code from.';
+
+}
+
+document.getElementById('generate-code').addEventListener('click', generateGameCode);
+
+// Note: To compile with TurboWarp, export your blocks project and use TurboWarp's online compiler. </script>
+
+<footer>Powered by LLaMA.cpp AI simulation & TurboWarp compiler integration</footer> </body> </html>mpare"></block>       <block type="math_number"></block>       <block type="math_arithmetic"></block>       <block type="text"></block>       <block type="text_print"></block>       <block type="variables_get"></block>       <block type="variables_set"></block>       <block type="controls_repeat_ext"></block>     </xml>`, grid: { spacing: 20, length: 3, colour: '#ccc', snap: true }, trashcan: true });
+
+// Simulated LLaMA.cpp AI function to generate game code from blocks async function generateGameCode() { const output = document.getElementById('output'); output.textContent = 'Generating game code using LLaMA.cpp AI...';
+
+// Simulate AI processing delay
+await new Promise(resolve => setTimeout(resolve, 2000));
+
+// Get generated JavaScript code from blocks
+const code = Blockly.JavaScript.workspaceToCode(workspace);
+
+// Simulate AI enhancement by adding a header comment
+const aiEnhancedCode = `// Game code generated with LLaMA.cpp AI assistance
+
+` + code;
+
+output.textContent = aiEnhancedCode || '// No blocks to generate code from.';
+
+}
+
+document.getElementById('generate-code').addEventListener('click', generateGameCode);
+
+// Note: To compile with TurboWarp, export your blocks project from the block editor and use TurboWarp's online compiler. </script>
+
+<footer> Powered by LLaMA.cpp AI simulation & TurboWarp compiler integration </footer>
+
+</body> </html><!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8" /> <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <title>Block Coding with LLaMA.cpp AI and TurboWarp</title> <style> body { font-family: Arial, sans-serif; background: #121212; color: #eee; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; } header { background: #222; width: 100%; padding: 1rem; text-align: center; font-size: 1.5rem; color: #0af; user-select: none; } #blocklyDiv { height: 480px; width: 100%; max-width: 900px; border: 2px solid #0af; border-radius: 8px; background: #1e1e1e; } #output { margin: 1rem; width: 90vw; max-width: 900px; height: 300px; border: 2px solid #0af; border-radius: 8px; background: #000; color: #0f0; font-family: monospace; overflow-y: auto; padding: 1rem; white-space: pre-wrap; } button { background: #0af; border: none; color: #fff; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 1rem; margin-top: 0.5rem; user-select: none; transition: background-color 0.3s ease; } button:hover { background: #08c; } footer { margin-top: auto; padding: 1rem; font-size: 0.9rem; color: #555; user-select: none; } </style> <script src="https://unpkg.com/blockly/blockly.min.js"></script> </head> <body> <header>Block Coding with LLaMA.cpp AI and TurboWarp</header>
+
+<div id="blocklyDiv"></div>
 
 <button id="generate-code">Generate Game Code with AI</button>
 
 <pre id="output">Your generated code will appear here...</pre>
 
-<script>
-    // Placeholder for integration with LLaMA.cpp AI
-    async function generateGameCode() {
-        const output = document.getElementById('output');
-        output.textContent = 'Generating game code using LLaMA.cpp AI... (simulation)';
+<script> // Initialize Blockly workspace const workspace = Blockly.inject('blocklyDiv', { toolbox: <xml xmlns="https://developers.google.com/blockly/xml">       <block type="controls_if"></block>       <block type="logic_compare"></block>       <block type="math_number"></block>       <block type="math_arithmetic"></block>       <block type="text"></block>       <block type="text_print"></block>       <block type="variables_get"></block>       <block type="variables_set"></block>       <block type="controls_repeat_ext"></block>     </xml>, grid: { spacing: 20, length: 3, colour: '#ccc', snap: true }, trashcan: true });
 
-        // Simulate AI response delay
-        await new Promise(resolve => setTimeout(resolve, 2000));
+// Simulated LLaMA.cpp AI function to generate game code from blocks async function generateGameCode() { const output = document.getElementById('output'); output.textContent = 'Generating game code using LLaMA.cpp AI...';
 
-        // Example generated code snippet
-        const exampleCode = `// Example game code generated by LLaMA.cpp AI
+// Simulate AI processing delay
+await new Promise(resolve => setTimeout(resolve, 2000));
 
-function startGame() { console.log('Welcome to your AI-generated game!'); // Game logic here }
+// Get generated JavaScript code from blocks
+const code = Blockly.JavaScript.workspaceToCode(workspace);
 
-startGame();`;
+// Simulate AI enhancement by adding a header comment
+const aiEnhancedCode = `// Game code generated with LLaMA.cpp AI assistance
 
-        output.textContent = exampleCode;
-    }
+` + code;
 
-    document.getElementById('generate-code').addEventListener('click', generateGameCode);
+output.textContent = aiEnhancedCode || '// No blocks to generate code from.';
 
-    // Note: To compile with TurboWarp, export your blocks project from the block editor and use TurboWarp's online compiler.
-</script>
+}
 
-<footer>
-    Powered by LLaMA.cpp AI simulation &amp; TurboWarp compiler integration
-</footer>
+document.getElementById('generate-code').addEventListener('click', generateGameCode);
 
-</body> </html><!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8" /> <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <title>Block Coding with LLaMA.cpp AI and TurboWarp</title> <style> body { font-family: Arial, sans-serif; background: #121212; color: #eee; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; } header { background: #222; width: 100%; padding: 1rem; text-align: center; font-size: 1.5rem; color: #0af; user-select: none; } #block-editor { margin: 1rem; width: 90vw; max-width: 900px; height: 500px; border: 2px solid #0af; border-radius: 8px; background: #1e1e1e; display: flex; justify-content: center; align-items: center; color: #666; font-size: 1.2rem; text-align: center; padding: 1rem; } #output { margin: 1rem; width: 90vw; max-width: 900px; height: 300px; border: 2px solid #0af; border-radius: 8px; background: #000; color: #0f0; font-family: monospace; overflow-y: auto; padding: 1rem; white-space: pre-wrap; } button { background: #0af; border: none; color: #fff; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 1rem; margin-top: 0.5rem; user-select: none; transition: background-color 0.3s ease; } button:hover { background: #08c; } footer { margin-top: auto; padding: 1rem; font-size: 0.9rem; color: #555; user-select: none; } </style> </head> <body> <header>Block Coding with LLaMA.cpp AI and TurboWarp</header>
+// Note: To compile with TurboWarp, export your blocks project from the block editor and use TurboWarp's online compiler. </script>
 
-<div id="block-editor">
-    <p>This is where the block coding interface would be integrated (e.g., Scratch or TurboWarp blocks).</p>
-</div>
+<footer> Powered by LLaMA.cpp AI simulation & TurboWarp compiler integration </footer>
 
-<button id="generate-code">Generate Game Code with AI</button>
-
-<pre id="output">Your generated code will appear here...</pre>
-
-<script>
-    // Placeholder for integration with LLaMA.cpp AI
-    async function generateGameCode() {
-        const output = document.getElementById('output');
-        output.textContent = 'Generating game code using LLaMA.cpp AI... (simulation)';
-
-        // Simulate AI response delay
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        // Example generated code snippet
-        const exampleCode = `// Example game code generated by LLaMA.cpp AI
-
-function startGame() { console.log('Welcome to your AI-generated game!'); // Game logic here }
-
-startGame();`;
-
-        output.textContent = exampleCode;
-    }
-
-    document.getElementById('generate-code').addEventListener('click', generateGameCode);
-
-    // Note: To compile with TurboWarp, export your blocks project from the block editor and use TurboWarp's online compiler.
-</script>
-
-<footer>
-    Powered by LLaMA.cpp AI simulation &amp; TurboWarp compiler integration
-</footer>
-
-</body> </html><!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8" /> <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <title>Block Coding with LLaMA.cpp AI and TurboWarp</title> <style> body { font-family: Arial, sans-serif; background: #121212; color: #eee; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; } header { background: #222; width: 100%; padding: 1rem; text-align: center; font-size: 1.5rem; color: #0af; user-select: none; } #block-editor { margin: 1rem; width: 90vw; max-width: 900px; height: 500px; border: 2px solid #0af; border-radius: 8px; background: #1e1e1e; display: flex; justify-content: center; align-items: center; color: #666; font-size: 1.2rem; text-align: center; padding: 1rem; } #output { margin: 1rem; width: 90vw; max-width: 900px; height: 300px; border: 2px solid #0af; border-radius: 8px; background: #000; color: #0f0; font-family: monospace; overflow-y: auto; padding: 1rem; white-space: pre-wrap; } button { background: #0af; border: none; color: #fff; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 1rem; margin-top: 0.5rem; user-select: none; transition: background-color 0.3s ease; } button:hover { background: #08c; } footer { margin-top: auto; padding: 1rem; font-size: 0.9rem; color: #555; user-select: none; } </style> </head> <body> <header>Block Coding with LLaMA.cpp AI and TurboWarp</header>
-
-<div id="block-editor">
-    <p>This is where the block coding interface would be integrated (e.g., Scratch or TurboWarp blocks).</p>
-</div>
-
-<button id="generate-code">Generate Game Code with AI</button>
-
-<pre id="output">Your generated code will appear here...</pre>
-
-<script>
-    // Placeholder for integration with LLaMA.cpp AI
-    async function generateGameCode() {
-        const output = document.getElementById('output');
-        output.textContent = 'Generating game code using LLaMA.cpp AI... (simulation)';
-
-        // Simulate AI response delay
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        // Example generated code snippet
-        const exampleCode = `// Example game code generated by LLaMA.cpp AI
-
-function startGame() { console.log('Welcome to your AI-generated game!'); // Game logic here }
-
-startGame();`;
-
-        output.textContent = exampleCode;
-    }
-
-    document.getElementById('generate-code').addEventListener('click', generateGameCode);
-
-    // Note: To compile with TurboWarp, export your blocks project from the block editor and use TurboWarp's online compiler.
-</script>
-
-<footer>
-    Powered by LLaMA.cpp AI simulation &amp; TurboWarp compiler integration
-</footer>
-
-</body> </html><!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8" /> <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <title>Block Coding with LLaMA.cpp AI and TurboWarp</title> <style> body { font-family: Arial, sans-serif; background: #121212; color: #eee; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; } header { background: #222; width: 100%; padding: 1rem; text-align: center; font-size: 1.5rem; color: #0af; user-select: none; } #block-editor { margin: 1rem; width: 90vw; max-width: 900px; height: 500px; border: 2px solid #0af; border-radius: 8px; background: #1e1e1e; display: flex; justify-content: center; align-items: center; color: #666; font-size: 1.2rem; text-align: center; padding: 1rem; } #output { margin: 1rem; width: 90vw; max-width: 900px; height: 300px; border: 2px solid #0af; border-radius: 8px; background: #000; color: #0f0; font-family: monospace; overflow-y: auto; padding: 1rem; white-space: pre-wrap; } button { background: #0af; border: none; color: #fff; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 1rem; margin-top: 0.5rem; user-select: none; transition: background-color 0.3s ease; } button:hover { background: #08c; } footer { margin-top: auto; padding: 1rem; font-size: 0.9rem; color: #555; user-select: none; } </style> </head> <body> <header>Block Coding with LLaMA.cpp AI and TurboWarp</header>
-
-<div id="block-editor">
-    <p>This is where the block coding interface would be integrated (e.g., Scratch or TurboWarp blocks).</p>
-</div>
-
-<button id="generate-code">Generate Game Code with AI</button>
-
-<pre id="output">Your generated code will appear here...</pre>
-
-<script>
-    // Placeholder for integration with LLaMA.cpp AI
-    async function generateGameCode() {
-        const output = document.getElementById('output');
-        output.textContent = 'Generating game code using LLaMA.cpp AI... (simulation)';
-
-        // Simulate AI response delay
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        // Example generated code snippet
-        const exampleCode = `// Example game code generated by LLaMA.cpp AI
-
-function startGame() { console.log('Welcome to your AI-generated game!'); // Game logic here }
-
-startGame();`;
-
-        output.textContent = exampleCode;
-    }
-
-    document.getElementById('generate-code').addEventListener('click', generateGameCode);
-
-    // Note: To compile with TurboWarp, export your blocks project from the block editor and use TurboWarp's online compiler.
-</script>
-
-<footer>
-    Powered by LLaMA.cpp AI simulation &amp; TurboWarp compiler integration
-</footer>
-
-</body> </html><!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8" /> <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <title>Block Coding with LLaMA.cpp AI and TurboWarp</title> <style> body { font-family: Arial, sans-serif; background: #121212; color: #eee; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; } header { background: #222; width: 100%; padding: 1rem; text-align: center; font-size: 1.5rem; color: #0af; user-select: none; } #block-editor { margin: 1rem; width: 90vw; max-width: 900px; height: 500px; border: 2px solid #0af; border-radius: 8px; background: #1e1e1e; display: flex; justify-content: center; align-items: center; color: #666; font-size: 1.2rem; text-align: center; padding: 1rem; } #output { margin: 1rem; width: 90vw; max-width: 900px; height: 300px; border: 2px solid #0af; border-radius: 8px; background: #000; color: #0f0; font-family: monospace; overflow-y: auto; padding: 1rem; white-space: pre-wrap; } button { background: #0af; border: none; color: #fff; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 1rem; margin-top: 0.5rem; user-select: none; transition: background-color 0.3s ease; } button:hover { background: #08c; } footer { margin-top: auto; padding: 1rem; font-size: 0.9rem; color: #555; user-select: none; } </style> </head> <body> <header>Block Coding with LLaMA.cpp AI and TurboWarp</header>
-
-<div id="block-editor">
-    <p>This is where the block coding interface would be integrated (e.g., Scratch or TurboWarp blocks).</p>
-</div>
-
-<button id="generate-code">Generate Game Code with AI</button>
-
-<pre id="output">Your generated code will appear here...</pre>
-
-<script>
-    // Placeholder for integration with LLaMA.cpp AI
-    async function generateGameCode() {
-        const output = document.getElementById('output');
-        output.textContent = 'Generating game code using LLaMA.cpp AI... (simulation)';
-
-        // Simulate AI response delay
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        // Example generated code snippet
-        const exampleCode = `// Example game code generated by LLaMA.cpp AI
-
-function startGame() { console.log('Welcome to your AI-generated game!'); // Game logic here }
-
-startGame();`;
-
-        output.textContent = exampleCode;
-    }
-
-    document.getElementById('generate-code').addEventListener('click', generateGameCode);
-
-    // Note: To compile with TurboWarp, export your blocks project from the block editor and use TurboWarp's online compiler.
-</script>
-
-<footer>
-    Powered by LLaMA.cpp AI simulation &amp; TurboWarp compiler integration
-</footer>
-
-</body> </html><!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8" /> <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <title>Block Coding with LLaMA.cpp AI and TurboWarp</title> <style> body { font-family: Arial, sans-serif; background: #121212; color: #eee; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; } header { background: #222; width: 100%; padding: 1rem; text-align: center; font-size: 1.5rem; color: #0af; user-select: none; } #block-editor { margin: 1rem; width: 90vw; max-width: 900px; height: 500px; border: 2px solid #0af; border-radius: 8px; background: #1e1e1e; display: flex; justify-content: center; align-items: center; color: #666; font-size: 1.2rem; text-align: center; padding: 1rem; } #output { margin: 1rem; width: 90vw; max-width: 900px; height: 300px; border: 2px solid #0af; border-radius: 8px; background: #000; color: #0f0; font-family: monospace; overflow-y: auto; padding: 1rem; white-space: pre-wrap; } button { background: #0af; border: none; color: #fff; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 1rem; margin-top: 0.5rem; user-select: none; transition: background-color 0.3s ease; } button:hover { background: #08c; } footer { margin-top: auto; padding: 1rem; font-size: 0.9rem; color: #555; user-select: none; } </style> </head> <body> <header>Block Coding with LLaMA.cpp AI and TurboWarp</header>
-
-<div id="block-editor">
-    <p>This is where the block coding interface would be integrated (e.g., Scratch or TurboWarp blocks).</p>
-</div>
-
-<button id="generate-code">Generate Game Code with AI</button>
-
-<pre id="output">Your generated code will appear here...</pre>
-
-<script>
-    // Placeholder for integration with LLaMA.cpp AI
-    async function generateGameCode() {
-        const output = document.getElementById('output');
-        output.textContent = 'Generating game code using LLaMA.cpp AI... (simulation)';
-
-        // Simulate AI response delay
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        // Example generated code snippet
-        const exampleCode = `// Example game code generated by LLaMA.cpp AI
-
-function startGame() { console.log('Welcome to your AI-generated game!'); // Game logic here }
-
-startGame();`;
-
-        output.textContent = exampleCode;
-    }
-
-    document.getElementById('generate-code').addEventListener('click', generateGameCode);
-
-    // Note: To compile with TurboWarp, export your blocks project from the block editor and use TurboWarp's online compiler.
-</script>
-
-<footer>
-    Powered by LLaMA.cpp AI simulation &amp; TurboWarp compiler integration
-</footer>
-
-</body> </html><!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8" /> <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <title>Block Coding with LLaMA.cpp AI and TurboWarp</title> <style> body { font-family: Arial, sans-serif; background: #121212; color: #eee; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; } header { background: #222; width: 100%; padding: 1rem; text-align: center; font-size: 1.5rem; color: #0af; user-select: none; } #block-editor { margin: 1rem; width: 90vw; max-width: 900px; height: 500px; border: 2px solid #0af; border-radius: 8px; background: #1e1e1e; display: flex; justify-content: center; align-items: center; color: #666; font-size: 1.2rem; text-align: center; padding: 1rem; } #output { margin: 1rem; width: 90vw; max-width: 900px; height: 300px; border: 2px solid #0af; border-radius: 8px; background: #000; color: #0f0; font-family: monospace; overflow-y: auto; padding: 1rem; white-space: pre-wrap; } button { background: #0af; border: none; color: #fff; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 1rem; margin-top: 0.5rem; user-select: none; transition: background-color 0.3s ease; } button:hover { background: #08c; } footer { margin-top: auto; padding: 1rem; font-size: 0.9rem; color: #555; user-select: none; } </style> </head> <body> <header>Block Coding with LLaMA.cpp AI and TurboWarp</header>
-
-<div id="block-editor">
-    <p>This is where the block coding interface would be integrated (e.g., Scratch or TurboWarp blocks).</p>
-</div>
-
-<button id="generate-code">Generate Game Code with AI</button>
-
-<pre id="output">Your generated code will appear here...</pre>
-
-<script>
-    // Placeholder for integration with LLaMA.cpp AI
-    async function generateGameCode() {
-        const output = document.getElementById('output');
-        output.textContent = 'Generating game code using LLaMA.cpp AI... (simulation)';
-
-        // Simulate AI response delay
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        // Example generated code snippet
-        const exampleCode = `// Example game code generated by LLaMA.cpp AI
-
-function startGame() { console.log('Welcome to your AI-generated game!'); // Game logic here }
-
-startGame();`;
-
-        output.textContent = exampleCode;
-    }
-
-    document.getElementById('generate-code').addEventListener('click', generateGameCode);
-
-    // Note: To compile with TurboWarp, export your blocks project from the block editor and use TurboWarp's online compiler.
-</script>
-
-<footer>
-    Powered by LLaMA.cpp AI simulation &amp; TurboWarp compiler integration
-</footer>
-
-</body> </html><!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8" /> <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <title>Block Coding with LLaMA.cpp AI and TurboWarp</title> <style> body { font-family: Arial, sans-serif; background: #121212; color: #eee; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; } header { background: #222; width: 100%; padding: 1rem; text-align: center; font-size: 1.5rem; color: #0af; user-select: none; } #block-editor { margin: 1rem; width: 90vw; max-width: 900px; height: 500px; border: 2px solid #0af; border-radius: 8px; background: #1e1e1e; display: flex; justify-content: center; align-items: center; color: #666; font-size: 1.2rem; text-align: center; padding: 1rem; } #output { margin: 1rem; width: 90vw; max-width: 900px; height: 300px; border: 2px solid #0af; border-radius: 8px; background: #000; color: #0f0; font-family: monospace; overflow-y: auto; padding: 1rem; white-space: pre-wrap; } button { background: #0af; border: none; color: #fff; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 1rem; margin-top: 0.5rem; user-select: none; transition: background-color 0.3s ease; } button:hover { background: #08c; } footer { margin-top: auto; padding: 1rem; font-size: 0.9rem; color: #555; user-select: none; } </style> </head> <body> <header>Block Coding with LLaMA.cpp AI and TurboWarp</header>
-
-<div id="block-editor">
-    <p>This is where the block coding interface would be integrated (e.g., Scratch or TurboWarp blocks).</p>
-</div>
-
-<button id="generate-code">Generate Game Code with AI</button>
-
-<pre id="output">Your generated code will appear here...</pre>
-
-<script>
-    // Placeholder for integration with LLaMA.cpp AI
-    async function generateGameCode() {
-        const output = document.getElementById('output');
-        output.textContent = 'Generating game code using LLaMA.cpp AI... (simulation)';
-
-        // Simulate AI response delay
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        // Example generated code snippet
-        const exampleCode = `// Example game code generated by LLaMA.cpp AI
-
-function startGame() { console.log('Welcome to your AI-generated game!'); // Game logic here }
-
-startGame();`;
-
-        output.textContent = exampleCode;
-    }
-
-    document.getElementById('generate-code').addEventListener('click', generateGameCode);
-
-    // Note: To compile with TurboWarp, export your blocks project from the block editor and use TurboWarp's online compiler.
-</script>
-
-<footer>
-    Powered by LLaMA.cpp AI simulation &amp; TurboWarp compiler integration
-</footer>
-
-</body> </html>
+</body> </html>tml>
