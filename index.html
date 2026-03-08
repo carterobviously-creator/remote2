@@ -2,101 +2,79 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Simple Three.js Game</title>
+<title>Simple Three.js Game 2026</title>
 <style>
-  body { margin:0; overflow:hidden; background:#111; }
-  #hud {
-    position:fixed;
-    top:10px; left:10px;
-    color:#eee;
-    font-family:monospace;
-    font-size:1.2rem;
-    z-index:1;
-  }
+  body{margin:0;overflow:hidden;background:#111;color:#eee;font-family:monospace;}
+  #hud{position:fixed;top:10px;left:10px;font-size:1.2rem;}
 </style>
 </head>
 <body>
+
 <div id="hud">Score: <span id="score">0</span> | Time: <span id="time">60</span></div>
 
-<!-- Three.js and OrbitControls from CDN -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/jsm/controls/OrbitControls.js"></script>
+<!--  --------- Three.js CDN  ---------  -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.min.js"></script>
+
+<!--  --------- OrbitControls (optional)   ---------  -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.159.0/examples/jsm/controls/OrbitControls.js"></script>
 
 <script>
 /* ---------- Scene / Camera / Renderer ---------- */
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x112444);
 
-const camera = new THREE.PerspectiveCamera(
-  60,
-  window.innerWidth/window.innerHeight,
-  0.1,
-  1000
-);
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 200);
 camera.position.set(0, 5, 10);
 
-const renderer = new THREE.WebGLRenderer({ antialias:true });
+const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-/* ---------- Add a Ground Plane ---------- */
+/* ---------- Ground plane ---------- */
 const planeGeo = new THREE.PlaneGeometry(20,20);
-const planeMat = new THREE.MeshPhongMaterial({color:0x333333});
+const planeMat = new THREE.MeshPhongMaterial({color:0x444444});
 const plane = new THREE.Mesh(planeGeo,planeMat);
 plane.rotation.x = -Math.PI/2;
 plane.position.y = -1;
 scene.add(plane);
 
 /* ---------- Lights ---------- */
-const ambient = new THREE.AmbientLight(0xffffff,0.4);
-scene.add(ambient);
-const dirLight = new THREE.DirectionalLight(0xffffff,0.6);
-dirLight.position.set(5,10,7.5);
-scene.add(dirLight);
+scene.add(new THREE.AmbientLight(0xffffff,0.4));
+const dir = new THREE.DirectionalLight(0xffffff,0.6);
+dir.position.set(5,10,7.5);
+scene.add(dir);
 
 /* ---------- Controls ---------- */
 const controls = new THREE.OrbitControls(camera,renderer.domElement);
 controls.enableDamping = true;
 
-/* ---------- Game State ---------- */
-let cube = null;          // current target cube
+/* ---------- Game state ---------- */
+let cube = null;
 let score = 0;
-let timeLeft = 60;        // seconds
+let timeLeft = 60;                   // seconds
 const scoreEl = document.getElementById('score');
 const timeEl  = document.getElementById('time');
 let timerId;
 
-/* ---------- Raycaster for clicks ---------- */
+/* ---------- Raycaster ---------- */
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
-/* ---------- Functions ---------- */
 function spawnCube() {
-  if (cube) scene.remove(cube); // remove previous
-
-  const geometry = new THREE.BoxGeometry(1,1,1);
-  const material = new THREE.MeshPhongMaterial({color:0x00ff99});
-  cube = new THREE.Mesh(geometry,material);
-
-  // Random X/Z within some range, Y above ground
-  cube.position.set(
-    (Math.random()*4-2),
-    1,
-    (Math.random()*4-2)
-  );
+  if (cube) scene.remove(cube);
+  const geo = new THREE.BoxGeometry(1,1,1);
+  const mat = new THREE.MeshPhongMaterial({color:0x00ff99});
+  cube = new THREE.Mesh(geo,mat);
+  cube.position.set(Math.random()*4-2, 1, Math.random()*4-2);
   scene.add(cube);
 }
 
-function onClick(event) {
-  // Convert click to NDC (-1…+1)
-  mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-  mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-
-  raycaster.setFromCamera(mouse,this);
-
-  const intersects = raycaster.intersectObjects([cube],false);
-  if (intersects.length > 0) {
-    // Hit
+function onClick(event){
+  mouse.x = (event.clientX/window.innerWidth)*2-1;
+  mouse.y = -(event.clientY/window.innerHeight)*2+1;
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObject(cube, false);
+  if (intersects.length){
     scene.remove(cube);
     cube = null;
     score++;
@@ -104,36 +82,32 @@ function onClick(event) {
   }
 }
 
-function updateTimer() {
+function updateTimer(){
   timeLeft--;
   timeEl.textContent = timeLeft;
-  if (timeLeft <= 0) {
+  if (timeLeft <= 0){
     clearInterval(timerId);
     alert(`Game over!\nYour score: ${score}`);
   }
 }
 
-/* ---------- Resize handling ---------- */
-window.addEventListener('resize', () => {
+window.addEventListener('resize', ()=>{
   camera.aspect = window.innerWidth/window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-/* ---------- Animation loop ---------- */
-function animate() {
+function animate(){
   requestAnimationFrame(animate);
   controls.update();
-  renderer.render(scene,camera);
+  renderer.render(scene, camera);
 }
 animate();
 
 /* ---------- Start game ---------- */
 spawnCube();
-timerId  = setInterval(updateTimer,1000);
-setInterval(spawnCube, 2000); // spawn new cube every 2 sec
-
-/* ---------- Click handler ---------- */
+timerId = setInterval(updateTimer,1000);
+setInterval(spawnCube, 2000);
 renderer.domElement.addEventListener('pointerdown', onClick);
 </script>
 </body>
