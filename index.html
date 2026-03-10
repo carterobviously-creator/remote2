@@ -1,114 +1,323 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="utf-8">
-<title>Simple Three.js Game 2026</title>
+<meta charset="UTF-8">
+<title>Noter4 Motor Driver + AI + RPM + WebSerial</title>
 <style>
-  body{margin:0;overflow:hidden;background:#111;color:#eee;font-family:monospace;}
-  #hud{position:fixed;top:10px;left:10px;font-size:1.2rem;}
+  body {
+    background:#050510;
+    color:#eee;
+    font-family: Consolas, monospace;
+    display:flex;
+    flex-direction:row;
+    gap:20px;
+    padding:20px;
+  }
+  #controls, #aiPanel {
+    min-width:240px;
+  }
+  h2 {
+    margin-top:0;
+  }
+  button {
+    width:220px;
+    padding:8px;
+    margin:4px 0;
+    background:#181828;
+    color:#eee;
+    border:1px solid #555;
+    cursor:pointer;
+  }
+  button:hover {
+    background:#25253a;
+  }
+  #status, #hwStatus, #aiStatus, #rpmStatus {
+    margin-top:6px;
+    font-size:12px;
+  }
+  #sim {
+    width:280px;
+    height:280px;
+    border:1px solid #444;
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#000;
+    position:relative;
+  }
+  #wheel {
+    width:180px;
+    height:180px;
+    border-radius:50%;
+    border:4px solid #0ff;
+    position:relative;
+    transform-origin:50% 50%;
+  }
+  #marker {
+    width:4px;
+    height:34px;
+    background:#0ff;
+    position:absolute;
+    top:12px;
+    left:50%;
+    transform:translateX(-50%);
+  }
+  #info {
+    position:absolute;
+    bottom:10px;
+    width:100%;
+    text-align:center;
+    font-size:14px;
+    color:#0f0;
+  }
+  #aiLog {
+    width:100%;
+    height:160px;
+    background:#050515;
+    color:#9f9;
+    border:1px solid #333;
+    font-family: Consolas, monospace;
+    font-size:11px;
+    padding:4px;
+    box-sizing:border-box;
+    overflow-y:auto;
+    white-space:pre-wrap;
+  }
+  input[type=number] {
+    width:220px;
+    padding:4px;
+    margin:4px 0;
+    background:#101020;
+    color:#eee;
+    border:1px solid #444;
+  }
 </style>
 </head>
 <body>
 
-<div id="hud">Score: <span id="score">0</span> | Time: <span id="time">60</span></div>
+<div id="controls">
+  <h2>Noter4 Motor Driver</h2>
+  <button id="stepPlus">STEP + (10)</button>
+  <button id="stepMinus">STEP - (10)</button>
+  <button id="stopBtn">STOP</button>
+  <hr>
+  <button id="connectBtn">Connect USB‑Serial</button>
+  <div id="status">Status: Idle (SIM OK)</div>
+  <div id="hwStatus">Hardware: Not connected</div>
+  <p style="font-size:11px;opacity:0.8;">
+    Serial protocol:<br>
+    <code>STEP + 10\n</code>, <code>STEP - 10\n</code>, <code>STOP\n</code>
+  </p>
+  <hr>
+  <h3>Motor Speed Control (RPM)</h3>
+  <input id="rpmInput" type="number" value="100" min="1" max="5000">
+  <button id="rpmStart">Start Motor</button>
+  <button id="rpmStop">Stop Motor</button>
+  <div id="rpmStatus">Motor RPM: 0</div>
+</div>
 
-<!--  --------- Three.js CDN  ---------  -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.min.js"></script>
+<div id="sim">
+  <div id="wheel">
+    <div id="marker"></div>
+  </div>
+  <div id="info">
+    Steps: <span id="stepCount">0</span><br>
+    Angle: <span id="angle">0</span>°
+  </div>
+</div>
 
-<!--  --------- OrbitControls (optional)   ---------  -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.159.0/examples/jsm/controls/OrbitControls.js"></script>
+<div id="aiPanel">
+  <h2>Noter4 AI</h2>
+  <button id="aiStart">Start AI Pattern</button>
+  <button id="aiStop">Stop AI</button>
+  <div id="aiStatus">AI: Idle</div>
+  <div style="font-size:11px;margin-top:6px;">AI Log:</div>
+  <div id="aiLog"></div>
+</div>
 
 <script>
-/* ---------- Scene / Camera / Renderer ---------- */
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x112444);
+  // --- SIM STATE ---
+  let stepCount = 0;
+  let angle = 0;
 
-const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 200);
-camera.position.set(0, 5, 10);
+  // 28BYJ‑48 profile: 2048 steps per revolution
+  const stepAngle = 360 / 2048;
 
-const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
+  const stepCountEl = document.getElementById('stepCount');
+  const angleEl = document.getElementById('angle');
+  const wheelEl = document.getElementById('wheel');
+  const statusEl = document.getElementById('status');
+  const hwStatusEl = document.getElementById('hwStatus');
+  const rpmStatus = document.getElementById('rpmStatus');
 
-/* ---------- Ground plane ---------- */
-const planeGeo = new THREE.PlaneGeometry(20,20);
-const planeMat = new THREE.MeshPhongMaterial({color:0x444444});
-const plane = new THREE.Mesh(planeGeo,planeMat);
-plane.rotation.x = -Math.PI/2;
-plane.position.y = -1;
-scene.add(plane);
-
-/* ---------- Lights ---------- */
-scene.add(new THREE.AmbientLight(0xffffff,0.4));
-const dir = new THREE.DirectionalLight(0xffffff,0.6);
-dir.position.set(5,10,7.5);
-scene.add(dir);
-
-/* ---------- Controls ---------- */
-const controls = new THREE.OrbitControls(camera,renderer.domElement);
-controls.enableDamping = true;
-
-/* ---------- Game state ---------- */
-let cube = null;
-let score = 0;
-let timeLeft = 60;                   // seconds
-const scoreEl = document.getElementById('score');
-const timeEl  = document.getElementById('time');
-let timerId;
-
-/* ---------- Raycaster ---------- */
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-
-function spawnCube() {
-  if (cube) scene.remove(cube);
-  const geo = new THREE.BoxGeometry(1,1,1);
-  const mat = new THREE.MeshPhongMaterial({color:0x00ff99});
-  cube = new THREE.Mesh(geo,mat);
-  cube.position.set(Math.random()*4-2, 1, Math.random()*4-2);
-  scene.add(cube);
-}
-
-function onClick(event){
-  mouse.x = (event.clientX/window.innerWidth)*2-1;
-  mouse.y = -(event.clientY/window.innerHeight)*2+1;
-  raycaster.setFromCamera(mouse, camera);
-  const intersects = raycaster.intersectObject(cube, false);
-  if (intersects.length){
-    scene.remove(cube);
-    cube = null;
-    score++;
-    scoreEl.textContent = score;
+  function updateSim() {
+    stepCountEl.textContent = stepCount;
+    angle = (stepCount * stepAngle) % 360;
+    angleEl.textContent = angle.toFixed(1);
+    wheelEl.style.transform = 'rotate(' + angle + 'deg)';
   }
-}
 
-function updateTimer(){
-  timeLeft--;
-  timeEl.textContent = timeLeft;
-  if (timeLeft <= 0){
-    clearInterval(timerId);
-    alert(`Game over!\nYour score: ${score}`);
+  function simStep(dir, steps, doneCb) {
+    statusEl.textContent = 'Status: Stepping (SIM)';
+    let i = 0;
+    const interval = setInterval(() => {
+      stepCount += dir;
+      updateSim();
+      i++;
+      if (i >= steps) {
+        clearInterval(interval);
+        statusEl.textContent = 'Status: Idle (SIM)';
+        if (doneCb) doneCb();
+      }
+    }, 20);
   }
-}
 
-window.addEventListener('resize', ()=>{
-  camera.aspect = window.innerWidth/window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
+  // --- HARDWARE VIA WEB SERIAL ---
+  let port = null;
+  let writer = null;
 
-function animate(){
-  requestAnimationFrame(animate);
-  controls.update();
-  renderer.render(scene, camera);
-}
-animate();
+  async function connectHardware() {
+    if (!('serial' in navigator)) {
+      hwStatusEl.textContent = 'Hardware: Web Serial not supported';
+      alert('Use Microsoft Edge or Chrome for Web Serial.');
+      return;
+    }
 
-/* ---------- Start game ---------- */
-spawnCube();
-timerId = setInterval(updateTimer,1000);
-setInterval(spawnCube, 2000);
-renderer.domElement.addEventListener('pointerdown', onClick);
+    try {
+      port = await navigator.serial.requestPort();
+      await port.open({ baudRate: 115200 });
+      writer = port.writable.getWriter();
+      hwStatusEl.textContent = 'Hardware: Connected (115200 baud)';
+    } catch (e) {
+      console.error(e);
+      hwStatusEl.textContent = 'Hardware: Connection failed';
+    }
+  }
+
+  async function sendToHardware(command) {
+    if (!writer) return;
+    try {
+      const data = new TextEncoder().encode(command + '\n');
+      await writer.write(data);
+    } catch (e) {
+      console.error(e);
+      hwStatusEl.textContent = 'Hardware: Error sending data';
+    }
+  }
+
+  // --- BUTTONS ---
+  document.getElementById('stepPlus').onclick = () => {
+    simStep(+1, 10);
+    sendToHardware('STEP + 10');
+  };
+
+  document.getElementById('stepMinus').onclick = () => {
+    simStep(-1, 10);
+    sendToHardware('STEP - 10');
+  };
+
+  document.getElementById('stopBtn').onclick = () => {
+    statusEl.textContent = 'Status: STOP (SIM)';
+    sendToHardware('STOP');
+  };
+
+  document.getElementById('connectBtn').onclick = connectHardware;
+
+  // --- Noter4 AI ---
+  const aiStatusEl = document.getElementById('aiStatus');
+  const aiLogEl = document.getElementById('aiLog');
+  let aiRunning = false;
+  let aiDir = +1;
+
+  function aiLog(msg) {
+    const t = new Date().toLocaleTimeString();
+    aiLogEl.textContent += `[${t}] ${msg}\n`;
+    aiLogEl.scrollTop = aiLogEl.scrollHeight;
+  }
+
+  function aiStepPattern() {
+    if (!aiRunning) return;
+
+    if (stepCount > 300) aiDir = -1;
+    if (stepCount < -300) aiDir = +1;
+
+    const dirText = aiDir > 0 ? '+' : '-';
+    aiLog(`AI: STEP ${dirText} 10 (pos=${stepCount})`);
+    aiStatusEl.textContent = `AI: Stepping ${dirText}`;
+
+    simStep(aiDir, 10, () => {
+      sendToHardware(`STEP ${dirText} 10`);
+      if (aiRunning) {
+        setTimeout(aiStepPattern, 150);
+      } else {
+        aiStatusEl.textContent = 'AI: Idle';
+      }
+    });
+  }
+
+  document.getElementById('aiStart').onclick = () => {
+    if (aiRunning) return;
+    aiRunning = true;
+    aiLog('AI: Pattern started');
+    aiStepPattern();
+  };
+
+  document.getElementById('aiStop').onclick = () => {
+    aiRunning = false;
+    aiStatusEl.textContent = 'AI: Stopped';
+    aiLog('AI: Stopped');
+    sendToHardware('STOP');
+  };
+
+  // --- MOTOR RPM SYSTEM ---
+  let motorRunning = false;
+  let motorRPM = 0;
+  let lastFrameTime = null;
+
+  function motorLoop(timestamp) {
+    if (!motorRunning) {
+      lastFrameTime = null;
+      return;
+    }
+
+    if (lastFrameTime === null) {
+      lastFrameTime = timestamp;
+    }
+
+    const delta = timestamp - lastFrameTime;
+    lastFrameTime = timestamp;
+
+    const degPerMs = (motorRPM * 360) / 60000;
+    angle = (angle + degPerMs * delta) % 360;
+    wheelEl.style.transform = 'rotate(' + angle + 'deg)';
+    angleEl.textContent = angle.toFixed(1);
+
+    stepCount = Math.round(angle / stepAngle);
+    stepCountEl.textContent = stepCount;
+
+    requestAnimationFrame(motorLoop);
+  }
+
+  document.getElementById('rpmStart').onclick = () => {
+    const val = parseFloat(document.getElementById('rpmInput').value);
+    if (isNaN(val) || val <= 0) {
+      alert("Enter a valid RPM (20, 567, 1000, etc.)");
+      return;
+    }
+    motorRPM = val;
+    motorRunning = true;
+    rpmStatus.textContent = "Motor RPM: " + motorRPM;
+    requestAnimationFrame(motorLoop);
+  };
+
+  document.getElementById('rpmStop').onclick = () => {
+    motorRunning = false;
+    rpmStatus.textContent = "Motor RPM: 0";
+  };
+
+  updateSim();
 </script>
+
 </body>
 </html>
