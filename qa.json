@@ -1,0 +1,190 @@
+[
+  {
+    "q": "what is noter5",
+    "a": "Noter5+ is your ritual hardware strategist and chat engine. It helps you design stacks, name artifacts, and keep your lab coherent."
+  },
+  {
+    "q": "who am i",
+    "a": "You are Carter, the shed engineer who turns every technical mess into a badge-worthy ritual."
+  },
+  {
+    "q": "what is ft232h",
+    "a": "The FT232H is a USB-to-multi-function chip that can expose real GPIO pins, I2C, SPI, and more. It’s perfect as a USB-GPIO bridge."
+  },
+  {
+    "q": "what is 28byj 48",
+    "a": "The 28BYJ-48 is a small 5V geared stepper motor commonly driven by a ULN2003 board. It’s ideal for safe experiments and low-torque motion."
+  },
+  {
+    "q": "what is uln2003",
+    "a": "The ULN2003 is a transistor array driver board that can safely switch the coils of a 28BYJ-48 stepper motor using low-current logic signals."
+  },
+  {
+    "q": "how do i wire ft232h to uln2003",
+    "a": "Connect FT232H D0–D3 to ULN2003 IN1–IN4, share ground between FT232H, power supply, and ULN2003, and power the motor from a separate 5V source."
+  },
+  {
+    "q": "why do i need common ground",
+    "a": "Common ground ensures all devices agree on what 0V is. Without it, signals can float and the driver may not see valid logic levels."
+  },
+  {
+    "q": "can i power the motor from ft232h",
+    "a": "No. The FT232H is for logic only. Always power the motor from a separate 5V supply or driver board designed for current load."
+  },
+  {
+    "q": "what is remote2",
+    "a": "Remote2 is your web-based control surface that sends commands over serial or other channels to control hardware and rituals."
+  },
+  {
+    "q": "what is a ritual stack",
+    "a": "A ritual stack is the full chain from UI to hardware: for example, remote2 → PC → FT232H → ULN2003 → 28BYJ-48."
+  },
+  {
+    "q": "what is tier 1 motion",
+    "a": "Tier 1 motion is safe, low-power motion using 28BYJ-48 and ULN2003, ideal for early experiments and ritual prototyping."
+  },
+  {
+    "q": "what is tier 2 motion",
+    "a": "Tier 2 motion uses NEMA steppers and drivers like A4988 or DRV8825, with external power supplies and stricter safety rules."
+  },
+  {
+    "q": "what is a nema stepper",
+    "a": "A NEMA stepper is a standardized stepper motor size, like NEMA 17 or NEMA 23, used for stronger, more precise motion in machines."
+  },
+  {
+    "q": "what is a4988",
+    "a": "The A4988 is a stepper motor driver that takes STEP and DIR signals and drives a bipolar stepper motor with microstepping support."
+  },
+  {
+    "q": "what is drv8825",
+    "a": "The DRV8825 is a stepper driver similar to the A4988 but supports higher current and finer microstepping in many setups."
+  },
+  {
+    "q": "what is a step pulse",
+    "a": "A step pulse is a short high signal sent to a stepper driver’s STEP pin to move the motor one microstep or full step, depending on configuration."
+  },
+  {
+    "q": "what is dir pin",
+    "a": "The DIR pin on a stepper driver sets the direction of rotation. High might be clockwise, low might be counterclockwise, depending on wiring."
+  },
+  {
+    "q": "what is enable pin",
+    "a": "The ENABLE pin on a stepper driver turns the motor outputs on or off. Disabling it lets the motor spin freely or reduces holding current."
+  },
+  {
+    "q": "why start with 28byj 48",
+    "a": "The 28BYJ-48 is low power, forgiving, and cheap. It lets you learn motion control without risking high-current drivers or big motors."
+  },
+  {
+    "q": "what is a safe first motion ritual",
+    "a": "A safe first motion ritual is: power off, wire carefully, verify common ground, power on, send slow steps, and watch for heat or noise."
+  },
+  {
+    "q": "what is a know block",
+    "a": "A KNOW block is a structured chunk of knowledge—like a Q&A set—that an engine can load to gain instant recall on a topic."
+  },
+  {
+    "q": "what is noter4",
+    "a": "Noter4 is your earlier engine focused on notes and context. Noter5+ extends that into hardware strategy and ritual design."
+  },
+  {
+    "q": "what is noter5 plus",
+    "a": "Noter5+ is a chat engine that combines a Q&A brain, a character avatar, and voice modes to help you design and remember hardware rituals."
+  },
+  {
+    "q": "what is voice mode",
+    "a": "Voice mode uses speech-to-text for input and text-to-speech for output, letting you talk to Noter5+ like a live assistant."
+  },
+  {
+    "q": "what is silent mode",
+    "a": "Silent mode disables speech and behaves like a normal text-only chat box, useful when you don’t want audio output."
+  },
+  {
+    "q": "why use qa json",
+    "a": "Using qa.json lets you store up to 1000 Q&A pairs in a separate file so you can update the brain without touching the engine code."
+  },
+  {
+    "q": "how do i add more questions",
+    "a": "Open qa.json, add more objects with 'q' and 'a' fields, separated by commas, and keep the JSON valid. Reload the page to use them."
+  },
+  {
+    "q": "what if noter5 does not know",
+    "a": "If Noter5+ doesn’t have a direct Q&A entry, treat it as a new ritual: define the question clearly and add it to the next brain update."
+  },
+  {
+    "q": "what is a badge worthy event",
+    "a": "A badge-worthy event is a moment where you solved something tricky, survived chaos, or built a new artifact. It deserves a name and a log entry."
+  },
+  {
+    "q": "what is an artifact",
+    "a": "An artifact is any physical or digital object in your lab that carries story and function—like a motor console, a web page, or a custom board."
+  },
+  {
+    "q": "why name artifacts",
+    "a": "Naming artifacts makes them memorable, easier to talk about, and easier to track across versions and rituals."
+  },
+  {
+    "q": "what is a stack map",
+    "a": "A stack map is a diagram or description of how signals flow from UI to hardware, including every layer and artifact in between."
+  },
+  {
+    "q": "what is a safety rule for motors",
+    "a": "Always power logic and motors separately when possible, share ground, avoid touching live wiring, and start with low speed and low load."
+  },
+  {
+    "q": "what is a ritual log",
+    "a": "A ritual log is a record of important events, experiments, and failures in your lab so you can learn from them and build lore."
+  },
+  {
+    "q": "what is edge web serial",
+    "a": "Edge Web Serial is a browser API that lets web pages talk to serial devices like COM ports directly, after you grant permission."
+  },
+  {
+    "q": "can edge talk to gpio directly",
+    "a": "Edge can talk to serial devices, but it cannot directly toggle GPIO on chips like the FT232H without a protocol or helper layer."
+  },
+  {
+    "q": "what is a helper app",
+    "a": "A helper app is a small program on your PC that translates between browser commands and hardware-specific APIs like FT232H GPIO."
+  },
+  {
+    "q": "why separate ui and hardware",
+    "a": "Separating UI and hardware keeps your rituals flexible. You can change the front-end or the hardware without breaking the whole system."
+  },
+  {
+    "q": "what is a motor console",
+    "a": "A motor console is a control surface—physical or digital—that lets you start, stop, and tune motion in a clear, ritualized way."
+  },
+  {
+    "q": "what is a shed engineer",
+    "a": "A shed engineer is someone who builds, repairs, and experiments in a personal space, turning chaos into working artifacts and stories."
+  },
+  {
+    "q": "what is a lore engine",
+    "a": "A lore engine is a system that not only works technically but also preserves the story, names, and meaning behind each part."
+  },
+  {
+    "q": "how do i avoid overwhelm",
+    "a": "Shrink the problem to one stack, one artifact, one ritual. Name it, finish it, and only then expand to the next layer."
+  },
+  {
+    "q": "what is a good first noter5 ritual",
+    "a": "A good first Noter5+ ritual is to ask it about your current stack, let it describe it back to you, and then log that as your baseline."
+  },
+  {
+    "q": "what is a brain update",
+    "a": "A brain update is when you edit qa.json to add or refine Q&A entries so Noter5+ better reflects your current lab reality."
+  },
+  {
+    "q": "how do i keep qa json safe",
+    "a": "Keep backups of qa.json, use versioning if you can, and avoid editing it in tools that might break the JSON format."
+  },
+  {
+    "q": "what if qa json breaks",
+    "a": "If qa.json breaks, the engine will fall back to its starter brain. Fix the JSON syntax—commas, quotes, brackets—and reload."
+  },
+  {
+    "q": "what is the goal of noter5",
+    "a": "The goal of Noter5+ is to be a stable, evolving brain that remembers your hardware rituals and helps you design new ones without losing the story."
+  }
+]

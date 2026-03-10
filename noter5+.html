@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Noter5+ Engine</title>
+<style>
+  body {
+    background:#050712;
+    color:#e5e9ff;
+    font-family:system-ui, sans-serif;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+    min-height:100vh;
+    padding:20px;
+  }
+  #app {
+    width:420px;
+    max-width:100%;
+    background:#0b0f1f;
+    border-radius:16px;
+    padding:16px;
+    box-shadow:0 0 30px rgba(0,0,0,0.6);
+    border:1px solid #262b4a;
+  }
+  #header {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:12px;
+  }
+
+  /* --- AVATAR GUY --- */
+  #avatar {
+    width:72px;
+    height:72px;
+    border-radius:50%;
+    background:#111;
+    border:2px solid #6cf;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    box-shadow:0 0 18px rgba(80,180,255,0.6);
+    transition:transform 0.2s, box-shadow 0.2s, filter 0.2s;
+  }
+  #avatar img {
+    width:100%;
+    height:100%;
+    object-fit:cover;
+  }
+  #avatar.talking {
+    transform:scale(1.05);
+    box-shadow:0 0 28px rgba(120,220,255,0.9);
+    filter:brightness(1.2);
+  }
+
+  #title h1 {
+    font-size:18px;
+    margin:0;
+  }
+  #title p {
+    font-size:11px;
+    margin:2px 0 0;
+    color:#9aa3ff;
+  }
+  #modeToggle {
+    font-size:11px;
+    background:#151a33;
+    color:#dbe0ff;
+    border:1px solid #3a4270;
+    border-radius:999px;
+    padding:4px 10px;
+    cursor:pointer;
+  }
+  #log {
+    background:#050712;
+    border-radius:10px;
+    padding:10px;
+    height:260px;
+    overflow-y:auto;
+    font-size:13px;
+    border:1px solid #1b2140;
+  }
+  .msg {
+    margin-bottom:8px;
+  }
+  .msg span.role {
+    font-weight:bold;
+    color:#8fa2ff;
+  }
+  .msg.user span.role {
+    color:#ffb86c;
+  }
+  #inputRow {
+    display:flex;
+    margin-top:10px;
+    gap:6px;
+  }
+  #textInput {
+    flex:1;
+    padding:8px;
+    border-radius:999px;
+    border:1px solid #3a4270;
+    background:#050712;
+    color:#e5e9ff;
+    font-size:13px;
+  }
+  #sendBtn, #micBtn {
+    padding:8px 10px;
+    border-radius:999px;
+    border:none;
+    cursor:pointer;
+    font-size:13px;
+  }
+  #sendBtn {
+    background:#4c6fff;
+    color:white;
+  }
+  #micBtn {
+    background:#151a33;
+    color:#c5ccff;
+    border:1px solid #3a4270;
+  }
+  #micBtn.listening {
+    background:#ff4c6a;
+    color:white;
+    border-color:#ff9aa8;
+  }
+  #status {
+    margin-top:6px;
+    font-size:11px;
+    color:#8b93ff;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="header">
+    <div id="avatar">
+      <img src="https://i.imgur.com/5ZQZQYF.png">
+    </div>
+    <div id="title">
+      <h1>Noter5+</h1>
+      <p>Ritual hardware strategist & chat engine</p>
+    </div>
+    <button id="modeToggle">Mode: Voice</button>
+  </div>
+
+  <div id="log"></div>
+
+  <div id="inputRow">
+    <input id="textInput" placeholder="Type to ask Noter5+..." autocomplete="off">
+    <button id="micBtn">🎤</button>
+    <button id="sendBtn">Send</button>
+  </div>
+  <div id="status">Loading Q&A brain…</div>
+</div>
+
+<script>
+  let qaBrain = [];
+
+  // --- Load 1000 Q&A from external file ---
+  fetch("qa.json")
+    .then(r => r.json())
+    .then(data => {
+      qaBrain = data;
+      setStatus("Noter5+ ready. Mode: Voice.");
+      addMessage("bot", "Noter5+ online. Brain loaded.");
+    })
+    .catch(() => {
+      setStatus("Failed to load qa.json. Using starter brain.");
+      qaBrain = [
+        { q:"what is noter5", a:"Noter5+ is your ritual hardware strategist." },
+        { q:"who am i", a:"You’re Carter, the shed engineer." },
+        { q:"what is 28byj 48", a:"A small 5V geared stepper motor." },
+        { q:"how do i wire ft232h", a:"Use D0–D3 to ULN2003 IN1–IN4." }
+      ];
+      addMessage("bot", "Starter brain loaded.");
+    });
+
+  function findAnswer(text) {
+    const t = text.toLowerCase();
+    let best = null;
+    let score = 0;
+    for (const pair of qaBrain) {
+      const key = pair.q.toLowerCase();
+      if (t.includes(key) || key.includes(t)) {
+        if (key.length > score) {
+          score = key.length;
+          best = pair.a;
+        }
+      }
+    }
+    return best;
+  }
+
+  const logEl = document.getElementById("log");
+  const inputEl = document.getElementById("textInput");
+  const sendBtn = document.getElementById("sendBtn");
+  const micBtn = document.getElementById("micBtn");
+  const modeToggle = document.getElementById("modeToggle");
+  const statusEl = document.getElementById("status");
+  const avatarEl = document.getElementById("avatar");
+
+  let voiceMode = true;
+  let listening = false;
+
+  function addMessage(role, text) {
+    const div = document.createElement("div");
+    div.className = "msg " + role;
+    div.innerHTML = `<span class="role">${role === "user" ? "You" : "Noter5+"}:</span> ${text}`;
+    logEl.appendChild(div);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  function setStatus(t) { statusEl.textContent = t; }
+
+  function speak(text) {
+    if (!voiceMode) return;
+    const u = new SpeechSynthesisUtterance(text);
+    u.onstart = () => avatarEl.classList.add("talking");
+    u.onend = () => avatarEl.classList.remove("talking");
+    speechSynthesis.speak(u);
+  }
+
+  let recognition = null;
+  if ("webkitSpeechRecognition" in window) {
+    recognition = new webkitSpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.onresult = e => {
+      const t = e.results[0][0].transcript;
+      inputEl.value = t;
+      handleUserInput(t);
+    };
+  }
+
+  micBtn.onclick = () => {
+    if (!voiceMode) return;
+    if (!recognition) return;
+    recognition.start();
+  };
+
+  function handleUserInput(text) {
+    addMessage("user", text);
+    inputEl.value = "";
+    const ans = findAnswer(text) || "I don’t have that in my brain yet.";
+    addMessage("bot", ans);
+    speak(ans);
+  }
+
+  sendBtn.onclick = () => handleUserInput(inputEl.value);
+  inputEl.onkeydown = e => { if (e.key === "Enter") handleUserInput(inputEl.value); };
+
+  modeToggle.onclick = () => {
+    voiceMode = !voiceMode;
+    modeToggle.textContent = voiceMode ? "Mode: Voice" : "Mode: Silent";
+    setStatus(voiceMode ? "Voice mode on." : "Silent mode on.");
+  };
+</script>
+</body>
+</html>
