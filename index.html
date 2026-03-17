@@ -1,323 +1,1068 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Noter4 Motor Driver + AI + RPM + WebSerial</title>
-<style>
-  body {
-    background:#050510;
-    color:#eee;
-    font-family: Consolas, monospace;
-    display:flex;
-    flex-direction:row;
-    gap:20px;
-    padding:20px;
-  }
-  #controls, #aiPanel {
-    min-width:240px;
-  }
-  h2 {
-    margin-top:0;
-  }
-  button {
-    width:220px;
-    padding:8px;
-    margin:4px 0;
-    background:#181828;
-    color:#eee;
-    border:1px solid #555;
-    cursor:pointer;
-  }
-  button:hover {
-    background:#25253a;
-  }
-  #status, #hwStatus, #aiStatus, #rpmStatus {
-    margin-top:6px;
-    font-size:12px;
-  }
-  #sim {
-    width:280px;
-    height:280px;
-    border:1px solid #444;
-    border-radius:8px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:#000;
-    position:relative;
-  }
-  #wheel {
-    width:180px;
-    height:180px;
-    border-radius:50%;
-    border:4px solid #0ff;
-    position:relative;
-    transform-origin:50% 50%;
-  }
-  #marker {
-    width:4px;
-    height:34px;
-    background:#0ff;
-    position:absolute;
-    top:12px;
-    left:50%;
-    transform:translateX(-50%);
-  }
-  #info {
-    position:absolute;
-    bottom:10px;
-    width:100%;
-    text-align:center;
-    font-size:14px;
-    color:#0f0;
-  }
-  #aiLog {
-    width:100%;
-    height:160px;
-    background:#050515;
-    color:#9f9;
-    border:1px solid #333;
-    font-family: Consolas, monospace;
-    font-size:11px;
-    padding:4px;
-    box-sizing:border-box;
-    overflow-y:auto;
-    white-space:pre-wrap;
-  }
-  input[type=number] {
-    width:220px;
-    padding:4px;
-    margin:4px 0;
-    background:#101020;
-    color:#eee;
-    border:1px solid #444;
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Night Circuit Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Orbitron', 'Segoe UI', sans-serif;
+            background-color: #0a0a14;
+            color: #e0e0ff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(100, 0, 255, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(255, 0, 128, 0.05) 0%, transparent 20%);
+        }
+
+        /* Cyberpunk header styling */
+        .header {
+            text-align: center;
+            padding: 2rem 1rem;
+            background: linear-gradient(to bottom, #0a0a14, #0f0f1a);
+            border-bottom: 1px solid #1a1a2e;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00f7ff, #ff00ff, transparent);
+            animation: scanline 3s linear infinite;
+        }
+
+        .title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(90deg, #00f7ff, #ff00ff, #00f7ff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: neonGlow 3s ease-in-out infinite alternate;
+            text-shadow: 0 0 10px rgba(0, 247, 255, 0.5);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #a0a0ff;
+            letter-spacing: 2px;
+            font-weight: 300;
+        }
+
+        /* Main layout */
+        .container {
+            display: flex;
+            flex-direction: column;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: calc(100vh - 280px);
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                flex-direction: row;
+                gap: 2rem;
+            }
+        }
+
+        /* Track list panel */
+        .tracklist-panel {
+            flex: 1;
+            background-color: rgba(15, 15, 25, 0.8);
+            border: 1px solid #1a1a2e;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 0 20px rgba(0, 247, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        @media (min-width: 768px) {
+            .tracklist-panel {
+                margin-bottom: 0;
+                max-width: 400px;
+            }
+        }
+
+        .panel-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: #00f7ff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-title::before {
+            content: '⟩';
+            color: #ff00ff;
+            font-size: 1.8rem;
+        }
+
+        .track-list {
+            list-style: none;
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .track-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .track-list::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        .track-list::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, #00f7ff, #ff00ff);
+            border-radius: 10px;
+        }
+
+        .track-item {
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            background-color: rgba(26, 26, 46, 0.6);
+            border: 1px solid #2a2a3a;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .track-item:hover {
+            background-color: rgba(40, 40, 70, 0.8);
+            border-color: #00f7ff;
+            box-shadow: 0 0 15px rgba(0, 247, 255, 0.3);
+            transform: translateX(5px);
+        }
+
+        .track-item.active {
+            background-color: rgba(0, 50, 80, 0.4);
+            border-color: #00f7ff;
+            box-shadow: 0 0 20px rgba(0, 247, 255, 0.4);
+            position: relative;
+        }
+
+        .track-item.active::before {
+            content: '▶';
+            position: absolute;
+            left: -10px;
+            color: #ff00ff;
+            font-size: 1.2rem;
+        }
+
+        .track-number {
+            color: #ff00ff;
+            font-weight: 700;
+            font-size: 1.1rem;
+            min-width: 30px;
+        }
+
+        .track-info {
+            flex: 1;
+        }
+
+        .track-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: #e0e0ff;
+        }
+
+        .track-artist {
+            font-size: 0.9rem;
+            color: #a0a0ff;
+            font-weight: 300;
+        }
+
+        .track-duration {
+            color: #00f7ff;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Visualizer panel */
+        .visualizer-panel {
+            flex: 2;
+            background-color: rgba(15, 15, 25, 0.8);
+            border: 1px solid #1a1a2e;
+            border-radius: 8px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .now-playing {
+            margin-bottom: 2rem;
+        }
+
+        .now-playing-title {
+            font-size: 1.5rem;
+            color: #ff00ff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .now-playing-title::before {
+            content: '⟁';
+            color: #00f7ff;
+            font-size: 1.8rem;
+        }
+
+        .current-track-info {
+            background-color: rgba(26, 26, 46, 0.6);
+            border-radius: 6px;
+            padding: 1.5rem;
+            border: 1px solid #2a2a3a;
+        }
+
+        .current-track-title {
+            font-size: 1.8rem;
+            color: #00f7ff;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .current-track-artist {
+            font-size: 1.2rem;
+            color: #a0a0ff;
+            margin-bottom: 1rem;
+            font-weight: 300;
+        }
+
+        .visualizer-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            background-color: rgba(10, 10, 20, 0.6);
+            border-radius: 8px;
+            border: 1px solid #2a2a3a;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .visualizer {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .audio-bars {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            height: 200px;
+            gap: 4px;
+            padding: 20px;
+        }
+
+        .bar {
+            width: 10px;
+            background: linear-gradient(to top, #00f7ff, #ff00ff);
+            border-radius: 2px;
+            transition: height 0.2s ease;
+        }
+
+        /* Player controls */
+        .player-controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(10, 10, 20, 0.95);
+            border-top: 1px solid #1a1a2e;
+            padding: 1rem 2rem;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.7);
+        }
+
+        .player-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .player-track-info {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .player-track-title {
+            font-size: 1.3rem;
+            color: #00f7ff;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .player-track-artist {
+            font-size: 1rem;
+            color: #a0a0ff;
+        }
+
+        .player-time {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: #ff00ff;
+            font-weight: 500;
+            min-width: 120px;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .control-btn {
+            background: rgba(26, 26, 46, 0.8);
+            border: 1px solid #2a2a3a;
+            color: #e0e0ff;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background-color: rgba(0, 247, 255, 0.2);
+            border-color: #00f7ff;
+            box-shadow: 0 0 15px rgba(0, 247, 255, 0.4);
+            transform: scale(1.1);
+        }
+
+        .control-btn.play-pause {
+            width: 60px;
+            height: 60px;
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #00f7ff, #ff00ff);
+            color: #0a0a14;
+        }
+
+        .control-btn.play-pause:hover {
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.6);
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background-color: rgba(26, 26, 46, 0.8);
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #00f7ff, #ff00ff);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .progress-handle {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 16px;
+            height: 16px;
+            background-color: #e0e0ff;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(0, 247, 255, 0.8);
+            display: none;
+        }
+
+        .progress-container:hover .progress-handle {
+            display: block;
+        }
+
+        /* Volume control */
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 1rem;
+            justify-content: center;
+        }
+
+        .volume-icon {
+            color: #00f7ff;
+            font-size: 1.2rem;
+        }
+
+        .volume-slider {
+            width: 120px;
+            height: 6px;
+            background-color: rgba(26, 26, 46, 0.8);
+            border-radius: 3px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .volume-level {
+            height: 100%;
+            background: linear-gradient(90deg, #00f7ff, #ff00ff);
+            border-radius: 3px;
+            width: 80%;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 1.5rem;
+            color: #a0a0ff;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            background-color: rgba(10, 10, 20, 0.8);
+            border-top: 1px solid #1a1a2e;
+            margin-top: 2rem;
+        }
+
+        .keyboard-hint {
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            color: #7070aa;
+        }
+
+        /* Animations */
+        @keyframes neonGlow {
+            0% {
+                text-shadow: 0 0 10px rgba(0, 247, 255, 0.7),
+                             0 0 20px rgba(0, 247, 255, 0.5),
+                             0 0 30px rgba(0, 247, 255, 0.3);
+            }
+            100% {
+                text-shadow: 0 0 15px rgba(255, 0, 255, 0.7),
+                             0 0 25px rgba(255, 0, 255, 0.5),
+                             0 0 35px rgba(255, 0, 255, 0.3);
+            }
+        }
+
+        @keyframes scanline {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2.5rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .player-controls {
+                padding: 1rem;
+            }
+            
+            .control-btn {
+                width: 45px;
+                height: 45px;
+            }
+            
+            .control-btn.play-pause {
+                width: 55px;
+                height: 55px;
+            }
+            
+            .current-track-title {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .title {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .panel-title, .now-playing-title {
+                font-size: 1.2rem;
+            }
+            
+            .track-item {
+                padding: 0.75rem;
+            }
+            
+            .controls {
+                gap: 1rem;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
+    <header class="header">
+        <h1 class="title">Night Circuit Lab</h1>
+        <p class="subtitle">CYBERPUNK AUDIO EXPERIENCE</p>
+    </header>
+    
+    <main class="container">
+        <section class="tracklist-panel">
+            <h2 class="panel-title">TRACK LIST</h2>
+            <ul class="track-list" id="trackList">
+                <!-- Track list will be generated by JavaScript -->
+            </ul>
+        </section>
+        
+        <section class="visualizer-panel">
+            <div class="now-playing">
+                <h2 class="now-playing-title">NOW PLAYING</h2>
+                <div class="current-track-info">
+                    <div class="current-track-title" id="currentTrackTitle">Select a track to begin</div>
+                    <div class="current-track-artist" id="currentTrackArtist">Night Circuit Lab</div>
+                </div>
+            </div>
+            
+            <div class="visualizer-container">
+                <div class="visualizer" id="visualizer">
+                    <div class="audio-bars" id="audioBars">
+                        <!-- Audio bars will be generated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <div class="player-controls">
+        <div class="player-container">
+            <div class="player-info">
+                <div class="player-track-info">
+                    <div class="player-track-title" id="playerTrackTitle">No track selected</div>
+                    <div class="player-track-artist" id="playerTrackArtist">-</div>
+                </div>
+                <div class="player-time">
+                    <span id="currentTime">0:00</span> / <span id="totalTime">0:00</span>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button class="control-btn prev" id="prevBtn" title="Previous track">⏮</button>
+                <button class="control-btn rewind" id="rewindBtn" title="Rewind 10 seconds">⏪</button>
+                <button class="control-btn play-pause" id="playPauseBtn" title="Play/Pause">▶</button>
+                <button class="control-btn forward" id="forwardBtn" title="Forward 10 seconds">⏩</button>
+                <button class="control-btn next" id="nextBtn" title="Next track">⏭</button>
+            </div>
+            
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar" id="progressBar"></div>
+                <div class="progress-handle" id="progressHandle"></div>
+            </div>
+            
+            <div class="volume-control">
+                <div class="volume-icon">🔊</div>
+                <div class="volume-slider" id="volumeSlider">
+                    <div class="volume-level" id="volumeLevel"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="footer">
+        <p>Night Circuit Lab © 2023 | Cyberpunk Audio Interface</p>
+        <p class="keyboard-hint">Keyboard controls: Space = Play/Pause, Left/Right = Seek, Up/Down = Volume</p>
+    </footer>
 
-<div id="controls">
-  <h2>Noter4 Motor Driver</h2>
-  <button id="stepPlus">STEP + (10)</button>
-  <button id="stepMinus">STEP - (10)</button>
-  <button id="stopBtn">STOP</button>
-  <hr>
-  <button id="connectBtn">Connect USB‑Serial</button>
-  <div id="status">Status: Idle (SIM OK)</div>
-  <div id="hwStatus">Hardware: Not connected</div>
-  <p style="font-size:11px;opacity:0.8;">
-    Serial protocol:<br>
-    <code>STEP + 10\n</code>, <code>STEP - 10\n</code>, <code>STOP\n</code>
-  </p>
-  <hr>
-  <h3>Motor Speed Control (RPM)</h3>
-  <input id="rpmInput" type="number" value="100" min="1" max="5000">
-  <button id="rpmStart">Start Motor</button>
-  <button id="rpmStop">Stop Motor</button>
-  <div id="rpmStatus">Motor RPM: 0</div>
-</div>
+    <!-- Audio elements will be created dynamically -->
+    
+    <script>
+        // Music track data - users can manually add their own tracks here
+        const tracks = [
+            {
+                id: 1,
+                title: "Neon Dreams",
+                artist: "Synthwave Collective",
+                duration: "3:45",
+                // Using free sample audio URLs that should work cross-origin
+                audioUrl: "https://assets.codepen.io/4358584/sample1.mp3"
+            },
+            {
+                id: 2,
+                title: "Circuit Breaker",
+                artist: "Digital Phantom",
+                duration: "4:12",
+                audioUrl: "https://assets.codepen.io/4358584/sample2.mp3"
+            },
+            {
+                id: 3,
+                title: "Midnight Drive",
+                artist: "Cyber Riders",
+                duration: "5:20",
+                audioUrl: "https://assets.codepen.io/4358584/sample3.mp3"
+            },
+            {
+                id: 4,
+                title: "Data Stream",
+                artist: "Neon Grid",
+                duration: "3:58",
+                audioUrl: "https://assets.codepen.io/4358584/sample4.mp3"
+            },
+            {
+                id: 5,
+                title: "Hologram Love",
+                artist: "Virtual Heart",
+                duration: "4:35",
+                audioUrl: "https://assets.codepen.io/4358584/sample5.mp3"
+            },
+            {
+                id: 6,
+                title: "Electric Rain",
+                artist: "Circuit City",
+                duration: "4:50",
+                audioUrl: "https://assets.codepen.io/4358584/sample6.mp3"
+            }
+        ];
 
-<div id="sim">
-  <div id="wheel">
-    <div id="marker"></div>
-  </div>
-  <div id="info">
-    Steps: <span id="stepCount">0</span><br>
-    Angle: <span id="angle">0</span>°
-  </div>
-</div>
+        // App state
+        const state = {
+            currentTrackIndex: 0,
+            isPlaying: false,
+            audioContext: null,
+            analyser: null,
+            audioSource: null,
+            audioElement: null,
+            barData: null
+        };
 
-<div id="aiPanel">
-  <h2>Noter4 AI</h2>
-  <button id="aiStart">Start AI Pattern</button>
-  <button id="aiStop">Stop AI</button>
-  <div id="aiStatus">AI: Idle</div>
-  <div style="font-size:11px;margin-top:6px;">AI Log:</div>
-  <div id="aiLog"></div>
-</div>
+        // DOM elements
+        const trackListElement = document.getElementById('trackList');
+        const currentTrackTitle = document.getElementById('currentTrackTitle');
+        const currentTrackArtist = document.getElementById('currentTrackArtist');
+        const playerTrackTitle = document.getElementById('playerTrackTitle');
+        const playerTrackArtist = document.getElementById('playerTrackArtist');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const rewindBtn = document.getElementById('rewindBtn');
+        const forwardBtn = document.getElementById('forwardBtn');
+        const progressBar = document.getElementById('progressBar');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressHandle = document.getElementById('progressHandle');
+        const currentTimeElement = document.getElementById('currentTime');
+        const totalTimeElement = document.getElementById('totalTime');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeLevel = document.getElementById('volumeLevel');
+        const audioBars = document.getElementById('audioBars');
 
-<script>
-  // --- SIM STATE ---
-  let stepCount = 0;
-  let angle = 0;
+        // Initialize the app
+        function init() {
+            renderTrackList();
+            createAudioElement();
+            setupEventListeners();
+            setupKeyboardControls();
+            createVisualizerBars();
+            loadTrack(state.currentTrackIndex);
+            updateVisualizer();
+        }
 
-  // 28BYJ‑48 profile: 2048 steps per revolution
-  const stepAngle = 360 / 2048;
+        // Render track list
+        function renderTrackList() {
+            trackListElement.innerHTML = '';
+            
+            tracks.forEach((track, index) => {
+                const trackItem = document.createElement('li');
+                trackItem.className = 'track-item';
+                trackItem.dataset.index = index;
+                
+                trackItem.innerHTML = `
+                    <div class="track-number">${String(index + 1).padStart(2, '0')}</div>
+                    <div class="track-info">
+                        <div class="track-title">${track.title}</div>
+                        <div class="track-artist">${track.artist}</div>
+                    </div>
+                    <div class="track-duration">${track.duration}</div>
+                `;
+                
+                trackItem.addEventListener('click', () => playTrack(index));
+                trackListElement.appendChild(trackItem);
+            });
+        }
 
-  const stepCountEl = document.getElementById('stepCount');
-  const angleEl = document.getElementById('angle');
-  const wheelEl = document.getElementById('wheel');
-  const statusEl = document.getElementById('status');
-  const hwStatusEl = document.getElementById('hwStatus');
-  const rpmStatus = document.getElementById('rpmStatus');
+        // Create audio element
+        function createAudioElement() {
+            state.audioElement = new Audio();
+            state.audioElement.crossOrigin = "anonymous";
+            state.audioElement.preload = "auto";
+            
+            // Audio event listeners
+            state.audioElement.addEventListener('loadedmetadata', updateTotalTime);
+            state.audioElement.addEventListener('timeupdate', updateProgress);
+            state.audioElement.addEventListener('ended', playNextTrack);
+            state.audioElement.addEventListener('volumechange', updateVolumeDisplay);
+            
+            // Set initial volume
+            state.audioElement.volume = 0.8;
+            updateVolumeDisplay();
+        }
 
-  function updateSim() {
-    stepCountEl.textContent = stepCount;
-    angle = (stepCount * stepAngle) % 360;
-    angleEl.textContent = angle.toFixed(1);
-    wheelEl.style.transform = 'rotate(' + angle + 'deg)';
-  }
+        // Setup event listeners for controls
+        function setupEventListeners() {
+            playPauseBtn.addEventListener('click', togglePlayPause);
+            prevBtn.addEventListener('click', playPrevTrack);
+            nextBtn.addEventListener('click', playNextTrack);
+            rewindBtn.addEventListener('click', () => seek(-10));
+            forwardBtn.addEventListener('click', () => seek(10));
+            
+            // Progress bar seeking
+            progressContainer.addEventListener('click', (e) => {
+                const rect = progressContainer.getBoundingClientRect();
+                const percent = (e.clientX - rect.left) / rect.width;
+                seekToPercent(percent);
+            });
+            
+            // Volume control
+            volumeSlider.addEventListener('click', (e) => {
+                const rect = volumeSlider.getBoundingClientRect();
+                const percent = (e.clientX - rect.left) / rect.width;
+                setVolume(percent);
+            });
+        }
 
-  function simStep(dir, steps, doneCb) {
-    statusEl.textContent = 'Status: Stepping (SIM)';
-    let i = 0;
-    const interval = setInterval(() => {
-      stepCount += dir;
-      updateSim();
-      i++;
-      if (i >= steps) {
-        clearInterval(interval);
-        statusEl.textContent = 'Status: Idle (SIM)';
-        if (doneCb) doneCb();
-      }
-    }, 20);
-  }
+        // Setup keyboard controls
+        function setupKeyboardControls() {
+            document.addEventListener('keydown', (e) => {
+                // Prevent default behavior for media keys
+                if (e.code === 'Space' || 
+                    e.code === 'ArrowLeft' || 
+                    e.code === 'ArrowRight' ||
+                    e.code === 'ArrowUp' ||
+                    e.code === 'ArrowDown') {
+                    e.preventDefault();
+                }
+                
+                switch(e.code) {
+                    case 'Space':
+                        togglePlayPause();
+                        break;
+                    case 'ArrowLeft':
+                        seek(-5);
+                        break;
+                    case 'ArrowRight':
+                        seek(5);
+                        break;
+                    case 'ArrowUp':
+                        adjustVolume(0.1);
+                        break;
+                    case 'ArrowDown':
+                        adjustVolume(-0.1);
+                        break;
+                }
+            });
+        }
 
-  // --- HARDWARE VIA WEB SERIAL ---
-  let port = null;
-  let writer = null;
+        // Create visualizer bars
+        function createVisualizerBars() {
+            audioBars.innerHTML = '';
+            const barCount = 64;
+            
+            for (let i = 0; i < barCount; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = `${Math.random() * 30 + 10}px`;
+                audioBars.appendChild(bar);
+            }
+            
+            state.barData = Array.from(audioBars.children);
+        }
 
-  async function connectHardware() {
-    if (!('serial' in navigator)) {
-      hwStatusEl.textContent = 'Hardware: Web Serial not supported';
-      alert('Use Microsoft Edge or Chrome for Web Serial.');
-      return;
-    }
+        // Load a track by index
+        function loadTrack(index) {
+            if (index < 0 || index >= tracks.length) return;
+            
+            // Stop current playback
+            if (state.isPlaying) {
+                state.audioElement.pause();
+            }
+            
+            // Reset audio context if it exists
+            if (state.audioContext) {
+                state.audioContext.close();
+            }
+            
+            // Update state
+            state.currentTrackIndex = index;
+            const track = tracks[index];
+            
+            // Update UI
+            currentTrackTitle.textContent = track.title;
+            currentTrackArtist.textContent = track.artist;
+            playerTrackTitle.textContent = track.title;
+            playerTrackArtist.textContent = track.artist;
+            
+            // Update active track in list
+            document.querySelectorAll('.track-item').forEach((item, i) => {
+                if (i === index) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+            
+            // Load new audio
+            state.audioElement.src = track.audioUrl;
+            state.audioElement.load();
+            
+            // Setup audio analysis for visualizer
+            setupAudioAnalysis();
+            
+            // Update total time display
+            updateTotalTime();
+            
+            // Auto-play if was playing before
+            if (state.isPlaying) {
+                playAudio();
+            }
+        }
 
-    try {
-      port = await navigator.serial.requestPort();
-      await port.open({ baudRate: 115200 });
-      writer = port.writable.getWriter();
-      hwStatusEl.textContent = 'Hardware: Connected (115200 baud)';
-    } catch (e) {
-      console.error(e);
-      hwStatusEl.textContent = 'Hardware: Connection failed';
-    }
-  }
+        // Setup audio analysis for visualizer
+        function setupAudioAnalysis() {
+            // Create audio context if not exists
+            if (!state.audioContext) {
+                state.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            // Create analyser
+            state.analyser = state.audioContext.createAnalyser();
+            state.analyser.fftSize = 256;
+            
+            // Connect audio element to analyser
+            if (state.audioSource) {
+                state.audioSource.disconnect();
+            }
+            
+            state.audioSource = state.audioContext.createMediaElementSource(state.audioElement);
+            state.audioSource.connect(state.analyser);
+            state.analyser.connect(state.audioContext.destination);
+        }
 
-  async function sendToHardware(command) {
-    if (!writer) return;
-    try {
-      const data = new TextEncoder().encode(command + '\n');
-      await writer.write(data);
-    } catch (e) {
-      console.error(e);
-      hwStatusEl.textContent = 'Hardware: Error sending data';
-    }
-  }
+        // Update visualizer animation
+        function updateVisualizer() {
+            if (state.analyser && state.barData) {
+                const dataArray = new Uint8Array(state.analyser.frequencyBinCount);
+                state.analyser.getByteFrequencyData(dataArray);
+                
+                // Update bar heights based on frequency data
+                state.barData.forEach((bar, i) => {
+                    // Map frequency data to bar height
+                    const value = dataArray[i % dataArray.length];
+                    const height = Math.max(10, value / 2);
+                    bar.style.height = `${height}px`;
+                    
+                    // Add color variation based on frequency
+                    const blueIntensity = Math.min(255, value + 100);
+                    const pinkIntensity = Math.min(255, 255 - value / 2);
+                    bar.style.background = `linear-gradient(to top, 
+                        rgba(0, ${blueIntensity}, 255, 0.9), 
+                        rgba(255, 0, ${pinkIntensity}, 0.9))`;
+                });
+            } else if (state.barData) {
+                // If no audio is playing, create a gentle pulsing effect
+                state.barData.forEach((bar, i) => {
+                    const time = Date.now() / 1000;
+                    const pulse = Math.sin(time * 2 + i * 0.2) * 10 + 20;
+                    bar.style.height = `${pulse}px`;
+                });
+            }
+            
+            // Continue animation
+            requestAnimationFrame(updateVisualizer);
+        }
 
-  // --- BUTTONS ---
-  document.getElementById('stepPlus').onclick = () => {
-    simStep(+1, 10);
-    sendToHardware('STEP + 10');
-  };
+        // Play/pause toggle
+        function togglePlayPause() {
+            if (state.isPlaying) {
+                pauseAudio();
+            } else {
+                playAudio();
+            }
+        }
 
-  document.getElementById('stepMinus').onclick = () => {
-    simStep(-1, 10);
-    sendToHardware('STEP - 10');
-  };
+        // Play audio
+        function playAudio() {
+            // Resume audio context if suspended (required by browsers)
+            if (state.audioContext && state.audioContext.state === 'suspended') {
+                state.audioContext.resume();
+            }
+            
+            state.audioElement.play()
+                .then(() => {
+                    state.isPlaying = true;
+                    playPauseBtn.innerHTML = '⏸';
+                    playPauseBtn.title = "Pause";
+                })
+                .catch(error => {
+                    console.error("Error playing audio:", error);
+                });
+        }
 
-  document.getElementById('stopBtn').onclick = () => {
-    statusEl.textContent = 'Status: STOP (SIM)';
-    sendToHardware('STOP');
-  };
+        // Pause audio
+        function pauseAudio() {
+            state.audioElement.pause();
+            state.isPlaying = false;
+            playPauseBtn.innerHTML = '▶';
+            playPauseBtn.title = "Play";
+        }
 
-  document.getElementById('connectBtn').onclick = connectHardware;
+        // Play a specific track
+        function playTrack(index) {
+            loadTrack(index);
+            playAudio();
+        }
 
-  // --- Noter4 AI ---
-  const aiStatusEl = document.getElementById('aiStatus');
-  const aiLogEl = document.getElementById('aiLog');
-  let aiRunning = false;
-  let aiDir = +1;
+        // Play previous track
+        function playPrevTrack() {
+            let newIndex = state.currentTrackIndex - 1;
+            if (newIndex < 0) newIndex = tracks.length - 1;
+            loadTrack(newIndex);
+            if (state.isPlaying) playAudio();
+        }
 
-  function aiLog(msg) {
-    const t = new Date().toLocaleTimeString();
-    aiLogEl.textContent += `[${t}] ${msg}\n`;
-    aiLogEl.scrollTop = aiLogEl.scrollHeight;
-  }
+        // Play next track
+        function playNextTrack() {
+            let newIndex = state.currentTrackIndex + 1;
+            if (newIndex >= tracks.length) newIndex = 0;
+            loadTrack(newIndex);
+            if (state.isPlaying) playAudio();
+        }
 
-  function aiStepPattern() {
-    if (!aiRunning) return;
+        // Seek in the current track
+        function seek(seconds) {
+            if (!state.audioElement.src) return;
+            
+            const newTime = state.audioElement.currentTime + seconds;
+            state.audioElement.currentTime = Math.max(0, Math.min(newTime, state.audioElement.duration));
+        }
 
-    if (stepCount > 300) aiDir = -1;
-    if (stepCount < -300) aiDir = +1;
+        // Seek to a percentage of the track
+        function seekToPercent(percent) {
+            if (!state.audioElement.src) return;
+            
+            const time = percent * state.audioElement.duration;
+            state.audioElement.currentTime = time;
+        }
 
-    const dirText = aiDir > 0 ? '+' : '-';
-    aiLog(`AI: STEP ${dirText} 10 (pos=${stepCount})`);
-    aiStatusEl.textContent = `AI: Stepping ${dirText}`;
+        // Set volume
+        function setVolume(percent) {
+            const volume = Math.max(0, Math.min(1, percent));
+            state.audioElement.volume = volume;
+            updateVolumeDisplay();
+        }
 
-    simStep(aiDir, 10, () => {
-      sendToHardware(`STEP ${dirText} 10`);
-      if (aiRunning) {
-        setTimeout(aiStepPattern, 150);
-      } else {
-        aiStatusEl.textContent = 'AI: Idle';
-      }
-    });
-  }
+        // Adjust volume by delta
+        function adjustVolume(delta) {
+            const newVolume = Math.max(0, Math.min(1, state.audioElement.volume + delta));
+            state.audioElement.volume = newVolume;
+            updateVolumeDisplay();
+        }
 
-  document.getElementById('aiStart').onclick = () => {
-    if (aiRunning) return;
-    aiRunning = true;
-    aiLog('AI: Pattern started');
-    aiStepPattern();
-  };
+        // Update volume display
+        function updateVolumeDisplay() {
+            const volume = state.audioElement.volume;
+            volumeLevel.style.width = `${volume * 100}%`;
+        }
 
-  document.getElementById('aiStop').onclick = () => {
-    aiRunning = false;
-    aiStatusEl.textContent = 'AI: Stopped';
-    aiLog('AI: Stopped');
-    sendToHardware('STOP');
-  };
+        // Update progress bar and time display
+        function updateProgress() {
+            if (!state.audioElement.src) return;
+            
+            const currentTime = state.audioElement.currentTime;
+            const duration = state.audioElement.duration;
+            
+            // Update progress bar
+            if (duration > 0) {
+                const percent = (currentTime / duration) * 100;
+                progressBar.style.width = `${percent}%`;
+                
+                // Update handle position
+                const containerWidth = progressContainer.offsetWidth;
+                const handlePosition = (percent / 100) * containerWidth;
+                progressHandle.style.left = `${handlePosition}px`;
+            }
+            
+            // Update time display
+            currentTimeElement.textContent = formatTime(currentTime);
+        }
 
-  // --- MOTOR RPM SYSTEM ---
-  let motorRunning = false;
-  let motorRPM = 0;
-  let lastFrameTime = null;
+        // Update total time display
+        function updateTotalTime() {
+            if (!state.audioElement.src) return;
+            
+            const duration = state.audioElement.duration;
+            if (isFinite(duration)) {
+                totalTimeElement.textContent = formatTime(duration);
+            }
+        }
 
-  function motorLoop(timestamp) {
-    if (!motorRunning) {
-      lastFrameTime = null;
-      return;
-    }
+        // Format time in MM:SS
+        function formatTime(seconds) {
+            if (!isFinite(seconds)) return "0:00";
+            
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
 
-    if (lastFrameTime === null) {
-      lastFrameTime = timestamp;
-    }
-
-    const delta = timestamp - lastFrameTime;
-    lastFrameTime = timestamp;
-
-    const degPerMs = (motorRPM * 360) / 60000;
-    angle = (angle + degPerMs * delta) % 360;
-    wheelEl.style.transform = 'rotate(' + angle + 'deg)';
-    angleEl.textContent = angle.toFixed(1);
-
-    stepCount = Math.round(angle / stepAngle);
-    stepCountEl.textContent = stepCount;
-
-    requestAnimationFrame(motorLoop);
-  }
-
-  document.getElementById('rpmStart').onclick = () => {
-    const val = parseFloat(document.getElementById('rpmInput').value);
-    if (isNaN(val) || val <= 0) {
-      alert("Enter a valid RPM (20, 567, 1000, etc.)");
-      return;
-    }
-    motorRPM = val;
-    motorRunning = true;
-    rpmStatus.textContent = "Motor RPM: " + motorRPM;
-    requestAnimationFrame(motorLoop);
-  };
-
-  document.getElementById('rpmStop').onclick = () => {
-    motorRunning = false;
-    rpmStatus.textContent = "Motor RPM: 0";
-  };
-
-  updateSim();
-</script>
-
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
 </body>
 </html>
