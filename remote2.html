@@ -1,93 +1,411 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ispwin Remote</title>
-  <style>
-    body { font-family: Arial, Helvetica, sans-serif; padding: 20px; background:#f6f6f8; }
-    .card{ background:#fff;padding:16px;border-radius:8px; max-width:600px; margin:auto; box-shadow:0 2px 6px rgba(0,0,0,.08) }
-    label{ display:block;margin-top:8px }
-    select,input,textarea{ width:100%; padding:8px; margin-top:6px; box-sizing:border-box }
-    button{ margin-top:10px; padding:8px 12px }
-    .log{ margin-top:12px; background:#111;color:#fff;padding:8px;border-radius:6px; font-family:monospace; height:120px; overflow:auto }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Mini‑GW Web Song Studio</title>
+<style>
+  :root{--bg:#0b0b0b;--panel:#071;--text:#dfffdc;--muted:#9fbf9f}
+  body{margin:0;font-family:Inter,Segoe UI,Consolas,monospace;background:var(--bg);color:var(--text);display:flex;min-height:100vh;align-items:flex-start;justify-content:center;padding:28px}
+  .wrap{width:980px;max-width:96%;background:#020202;border:1px solid #0a0a0a;padding:18px;border-radius:8px;box-shadow:0 6px 30px rgba(0,0,0,.6)}
+  h1{margin:0 0 8px;font-size:20px;color:var(--panel)}
+  p.lead{margin:0 0 16px;color:var(--muted);font-size:13px}
+  .row{display:flex;gap:12px;align-items:flex-start}
+  .col{flex:1}
+  label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+  input[type=text], textarea, select{width:100%;padding:8px;border-radius:6px;border:1px solid #0a0a0a;background:#050505;color:var(--text);box-sizing:border-box}
+  textarea{min-height:90px;resize:vertical}
+  button{background:var(--panel);color:#001;padding:10px 14px;border-radius:8px;border:none;font-weight:700;cursor:pointer}
+  button.secondary{background:transparent;border:1px solid #0a0a0a;color:var(--text)}
+  #log{margin-top:12px;background:#000;border:1px solid #072;padding:10px;height:160px;overflow:auto;font-size:12px;color:#9ff}
+  .controls{display:flex;gap:8px;align-items:center;margin-top:10px}
+  .small{font-size:12px;color:var(--muted)}
+  .download-link{display:inline-block;margin-left:8px;color:var(--panel);font-weight:700}
+  footer{margin-top:14px;color:var(--muted);font-size:12px}
+</style>
 </head>
 <body>
-  <div class="card">
-    <h2>ispwin Remote Control</h2>
+  <div class="wrap" role="main">
+    <h1>Mini‑GW Web Song Studio</h1>
+    <p class="lead">Static HTML you can host on GitHub Pages. Uses a configurable AI endpoint if you provide one, otherwise falls back to a local algorithmic generator and in‑browser synthesis (WAV download).</p>
 
-    <label>Command
-      <select id="cmd">
-        <option value="openApp">Open App</option>
-        <option value="setTheme">Set Theme</option>
-        <option value="createFile">Create File</option>
-        <option value="openFile">Open File in Editor</option>
-        <option value="closeWindow">Close Window</option>
-      </select>
-    </label>
+    <div class="row">
+      <div class="col" style="flex:0 0 360px">
+        <label>AI Endpoint (optional)</label>
+        <input id="apiUrl" type="text" placeholder="https://your-ai-host.example/api/generate" />
+        <div style="height:8px"></div>
 
-    <label>Parameter
-      <input id="param" placeholder="app id (explorer,editor,calculator,settings) or other param" />
-    </label>
+        <label>Model Key / Bearer (optional)</label>
+        <input id="apiKey" type="text" placeholder="Bearer token (if required)" />
 
-    <label>Extra (JSON)
-      <textarea id="extra" placeholder='{"path":"/notes.txt","content":"Hello"}'></textarea>
-    </label>
+        <div style="height:12px"></div>
 
-    <button id="send">Send Command</button>
+        <label>Prompt / Song Idea</label>
+        <textarea id="prompt" placeholder="e.g. 'dark synthwave, 90 BPM, minor, arpeggiated lead, 32 bars'"></textarea>
 
-    <div class="log" id="log"></div>
+        <div style="height:12px"></div>
+
+        <label>Preset</label>
+        <select id="preset">
+          <option value="synthwave">Synthwave (minor, arpeggio)</option>
+          <option value="ambient">Ambient (pads, slow)</option>
+          <option value="hiphop">Lo‑fi Hip Hop (boom bap)</option>
+          <option value="algorithmic">Algorithmic (seed → notes)</option>
+        </select>
+
+        <div class="controls">
+          <button id="generateBtn">Generate Song</button>
+          <button id="stopBtn" class="secondary">Stop</button>
+        </div>
+
+        <div style="height:8px"></div>
+        <div class="small">Output format: <strong>WAV</strong> (downloadable). If you supply an AI endpoint that returns audio bytes or a WAV URL, the page will use that instead.</div>
+      </div>
+
+      <div class="col">
+        <label>Live Console</label>
+        <div id="log" aria-live="polite"></div>
+        <div style="height:10px"></div>
+        <div class="small">After generation completes, a download link will appear here.</div>
+      </div>
+    </div>
+
+    <footer>Drop this file into a GitHub repo and enable Pages. To use a remote AI, point <code>AI Endpoint</code> to your model server that accepts JSON {prompt} and returns either JSON {notes:[...]} or raw WAV bytes.</footer>
   </div>
 
-  <script>
-    // Simple remote that uses BroadcastChannel if available, otherwise localStorage events.
-    const channelName = 'ispwin-channel';
-    const log = document.getElementById('log');
-    function append(s){ log.innerText += (log.innerText ? '\n' : '') + s; log.scrollTop = log.scrollHeight; }
+<script>
+/*
+  Mini-GW Web Song Studio
+  - Static single-file HTML for GitHub Pages
+  - Behavior:
+    1) If user provides an AI endpoint, the page will POST { prompt, preset } to it.
+       Expected responses (choose one):
+         A) JSON { notes: [{time, dur, note, vel, channel}], bpm }  <-- preferred
+         B) JSON { wavBase64: "..." }  <-- base64 WAV
+         C) Binary WAV response (Content-Type: audio/wav)
+    2) If no endpoint or AI fails, fallback to algorithmic generator:
+         - Convert prompt words into a deterministic note sequence
+         - Synthesize audio in-browser using OfflineAudioContext
+         - Offer WAV download
+  - No external libs required.
+*/
 
-    const bus = (function(){
-      if ('BroadcastChannel' in window){
-        const bc = new BroadcastChannel(channelName);
-        return {
-          send: (ev)=> bc.postMessage(ev),
-          on: (fn) => bc.addEventListener('message', e => fn(e.data))
-        };
-      } else {
-        window.addEventListener('storage', (e)=>{
-          if (e.key === channelName && e.newValue) {
-            try { const obj = JSON.parse(e.newValue); window._remote_storage_handler && window._remote_storage_handler(obj); } catch(e){}
-          }
-        });
-        return {
-          send: (ev)=> {
-            localStorage.setItem(channelName, JSON.stringify(ev));
-            // cleanup to allow subsequent identical events
-            setTimeout(()=> localStorage.removeItem(channelName), 200);
-          },
-          on: (fn)=> window._remote_storage_handler = fn
-        };
+/* ---------- Utilities ---------- */
+function log(msg){
+  const el = document.getElementById('log');
+  el.innerHTML += escapeHtml(msg) + '<br>';
+  el.scrollTop = el.scrollHeight;
+}
+function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function downloadBlob(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(url), 60000);
+}
+
+/* ---------- Simple note utilities ---------- */
+const NOTE_FREQ = (n) => 440 * Math.pow(2, (n - 69) / 12); // MIDI note to freq
+const NOTE_MAP = { C:0, 'C#':1, D:2, 'D#':3, E:4, F:5, 'F#':6, G:7, 'G#':8, A:9, 'A#':10, B:11 };
+
+function parseNoteName(name){ // "A4" -> midi number
+  const m = name.match(/^([A-G]#?)(-?\d+)$/i);
+  if(!m) return 69;
+  const pitch = m[1].toUpperCase();
+  const octave = parseInt(m[2],10);
+  return 12*(octave+1) + NOTE_MAP[pitch];
+}
+
+/* ---------- Algorithmic generator (fallback) ---------- */
+function promptToSeed(prompt){
+  // deterministic numeric seed from prompt
+  let h=2166136261;
+  for(let i=0;i<prompt.length;i++){ h ^= prompt.charCodeAt(i); h += (h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24); }
+  return Math.abs(h);
+}
+function seededRandom(seed){
+  return function(){ seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+}
+
+function generateNoteSequenceFromPrompt(prompt, preset){
+  const seed = promptToSeed(prompt + '|' + preset);
+  const rnd = seededRandom(seed);
+  const bpm = (preset==='ambient')?60:(preset==='hiphop')?80:90;
+  const bars = 16;
+  const ppq = 4; // quarter notes per beat
+  const totalBeats = bars * 4;
+  const notes = [];
+  const scaleMinor = [0,2,3,5,7,8,10];
+  const rootMidi = 57; // A3
+  for(let t=0;t<totalBeats;t++){
+    if(rnd() < 0.6){
+      const degree = Math.floor(rnd()*scaleMinor.length);
+      const octaveShift = Math.floor(rnd()*2); // 0 or 1
+      const midi = rootMidi + scaleMinor[degree] + octaveShift*12;
+      const dur = (rnd() < 0.6) ? 0.5 : 1.0;
+      const vel = 0.5 + rnd()*0.5;
+      notes.push({time: t, dur: dur, note: midi, vel: vel, channel: 0});
+    }
+    // occasional bass
+    if(rnd() < 0.15){
+      notes.push({time: t, dur: 1.0, note: rootMidi-12, vel: 0.6, channel: 1});
+    }
+    // drums as simple click events (channel 9)
+    if(preset==='hiphop' && rnd() < 0.35){
+      notes.push({time: t, dur: 0.25, note: 36, vel: 1.0, channel: 9});
+    }
+  }
+  return {notes, bpm};
+}
+
+/* ---------- In-browser synthesis ---------- */
+async function synthesizeToWav(sequence, bpm, opts={sampleRate:44100, secondsPadding:1}){
+  const sr = opts.sampleRate;
+  const secondsPerBeat = 60 / bpm;
+  const lastNote = sequence.reduce((m,n)=>Math.max(m, n.time + n.dur), 0);
+  const totalSeconds = lastNote * secondsPerBeat + opts.secondsPadding;
+  log(`Synthesizing ${totalSeconds.toFixed(2)}s @ ${sr}Hz (bpm ${bpm})...`);
+
+  // OfflineAudioContext for rendering
+  const ctx = new OfflineAudioContext(2, Math.ceil(totalSeconds * sr), sr);
+
+  // Simple synth: melody = saw + lowpass, bass = square, drums = noise+env
+  sequence.forEach(ev=>{
+    const start = ev.time * secondsPerBeat;
+    const dur = Math.max(0.05, ev.dur * secondsPerBeat);
+
+    if(ev.channel === 9){
+      // drum: short noise burst
+      const bufferSize = Math.floor(sr * 0.2);
+      const noise = ctx.createBuffer(1, bufferSize, sr);
+      const data = noise.getChannelData(0);
+      for(let i=0;i<bufferSize;i++) data[i] = (Math.random()*2-1) * (1 - i/bufferSize);
+      const src = ctx.createBufferSource();
+      src.buffer = noise;
+      const gain = ctx.createGain();
+      gain.gain.value = ev.vel;
+      src.connect(gain).connect(ctx.destination);
+      src.start(start);
+    } else {
+      const freq = NOTE_FREQ(ev.note);
+      // oscillator
+      const osc = ctx.createOscillator();
+      osc.type = (ev.channel===1)?'square':'sawtooth';
+      osc.frequency.value = freq;
+      // filter for tone shaping
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = (ev.channel===1)?800:2000;
+      // envelope
+      const gain = ctx.createGain();
+      const now = start;
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(ev.vel, now + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+      osc.connect(filter).connect(gain).connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + dur + 0.02);
+    }
+  });
+
+  const rendered = await ctx.startRendering();
+  // convert AudioBuffer to WAV
+  const wav = audioBufferToWav(rendered);
+  return new Blob([wav], {type:'audio/wav'});
+}
+
+/* ---------- WAV encoder (Float32 -> 16bit PCM WAV) ---------- */
+function audioBufferToWav(buffer, opt) {
+  opt = opt || {}
+  var numChannels = buffer.numberOfChannels
+  var sampleRate = buffer.sampleRate
+  var format = opt.float32 ? 3 : 1
+  var bitDepth = format === 3 ? 32 : 16
+
+  var result
+  if (numChannels === 2) {
+    result = interleave(buffer.getChannelData(0), buffer.getChannelData(1))
+  } else {
+    result = buffer.getChannelData(0)
+  }
+
+  return encodeWAV(result, numChannels, sampleRate, bitDepth, format)
+}
+
+function interleave(inputL, inputR){
+  var length = inputL.length + inputR.length
+  var result = new Float32Array(length)
+
+  var index = 0
+  var inputIndex = 0
+
+  while (index < length){
+    result[index++] = inputL[inputIndex]
+    result[index++] = inputR[inputIndex]
+    inputIndex++
+  }
+  return result
+}
+
+function encodeWAV(samples, numChannels, sampleRate, bitDepth, format){
+  var bytesPerSample = bitDepth / 8
+  var blockAlign = numChannels * bytesPerSample
+
+  var buffer = new ArrayBuffer(44 + samples.length * bytesPerSample)
+  var view = new DataView(buffer)
+
+  /* RIFF identifier */
+  writeString(view, 0, 'RIFF')
+  /* file length */
+  view.setUint32(4, 36 + samples.length * bytesPerSample, true)
+  /* RIFF type */
+  writeString(view, 8, 'WAVE')
+  /* format chunk identifier */
+  writeString(view, 12, 'fmt ')
+  /* format chunk length */
+  view.setUint32(16, 16, true)
+  /* sample format (raw) */
+  view.setUint16(20, format, true)
+  /* channel count */
+  view.setUint16(22, numChannels, true)
+  /* sample rate */
+  view.setUint32(24, sampleRate, true)
+  /* byte rate (sample rate * block align) */
+  view.setUint32(28, sampleRate * blockAlign, true)
+  /* block align (channel count * bytes per sample) */
+  view.setUint16(32, blockAlign, true)
+  /* bits per sample */
+  view.setUint16(34, bitDepth, true)
+  /* data chunk identifier */
+  writeString(view, 36, 'data')
+  /* data chunk length */
+  view.setUint32(40, samples.length * bytesPerSample, true)
+  if (format === 1) { // PCM
+    floatTo16BitPCM(view, 44, samples)
+  } else {
+    writeFloat32(view, 44, samples)
+  }
+  return buffer
+}
+
+function floatTo16BitPCM(output, offset, input){
+  for (var i = 0; i < input.length; i++, offset += 2){
+    var s = Math.max(-1, Math.min(1, input[i]))
+    output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true)
+  }
+}
+
+function writeFloat32(output, offset, input){
+  for (var i = 0; i < input.length; i++, offset += 4){
+    output.setFloat32(offset, input[i], true)
+  }
+}
+
+function writeString(view, offset, string){
+  for (var i = 0; i < string.length; i++){
+    view.setUint8(offset + i, string.charCodeAt(i))
+  }
+}
+
+/* ---------- AI integration ---------- */
+async function callAiEndpoint(apiUrl, apiKey, prompt, preset){
+  log('Calling AI endpoint: ' + apiUrl);
+  try {
+    const body = { prompt: prompt, preset: preset };
+    const headers = {'Content-Type':'application/json'};
+    if(apiKey) headers['Authorization'] = apiKey;
+    const res = await fetch(apiUrl, {method:'POST', headers, body: JSON.stringify(body)});
+    if(!res.ok) throw new Error('AI endpoint returned ' + res.status);
+    const ct = res.headers.get('content-type') || '';
+    if(ct.includes('application/json')){
+      const j = await res.json();
+      // If server returns wavBase64
+      if(j.wavBase64){
+        const bin = atob(j.wavBase64);
+        const arr = new Uint8Array(bin.length);
+        for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+        return {type:'wav', blob: new Blob([arr], {type:'audio/wav'})};
       }
-    })();
-
-    bus.on((ev) => {
-      append('OS → remote: ' + JSON.stringify(ev));
-    });
-
-    document.getElementById('send').addEventListener('click', ()=>{
-      const cmd = document.getElementById('cmd').value;
-      const param = document.getElementById('param').value;
-      const extraRaw = document.getElementById('extra').value.trim();
-      let extra = {};
-      if (extraRaw) {
-        try { extra = JSON.parse(extraRaw); } catch(e){ append('Bad JSON in Extra'); return; }
+      // If server returns notes
+      if(j.notes && Array.isArray(j.notes)){
+        return {type:'notes', notes:j.notes, bpm: j.bpm || 90};
       }
-      const payload = { type: 'remote-command', command: cmd, param, extra, id: 'remote2-' + Math.random().toString(36).slice(2) };
-      append('remote → OS: ' + JSON.stringify(payload));
-      bus.send(payload);
-    });
+      // If server returns a URL to audio
+      if(j.wavUrl){
+        return {type:'url', url:j.wavUrl};
+      }
+      throw new Error('Unrecognized JSON response from AI endpoint');
+    } else if(ct.includes('audio/')){
+      const blob = await res.blob();
+      return {type:'wav', blob};
+    } else {
+      // try to parse as JSON text
+      const text = await res.text();
+      try { const j = JSON.parse(text); if(j.notes) return {type:'notes', notes:j.notes, bpm:j.bpm||90}; } catch(e){}
+      throw new Error('Unknown response content-type: ' + ct);
+    }
+  } catch(err){
+    log('AI call failed: ' + err.message);
+    return {error: err.message};
+  }
+}
 
-    append('Remote ready. Channel: ' + channelName);
-  </script>
+/* ---------- Main flow ---------- */
+let running = false;
+document.getElementById('generateBtn').addEventListener('click', async ()=>{
+  if(running){ log('Already running.'); return; }
+  running = true;
+  log('--- GENERATION START ---');
+  const apiUrl = document.getElementById('apiUrl').value.trim();
+  const apiKey = document.getElementById('apiKey').value.trim();
+  const prompt = document.getElementById('prompt').value.trim() || document.getElementById('preset').value;
+  const preset = document.getElementById('preset').value;
+
+  if(apiUrl){
+    log('Using AI endpoint: ' + apiUrl);
+    const aiRes = await callAiEndpoint(apiUrl, apiKey, prompt, preset);
+    if(aiRes && aiRes.type === 'notes'){
+      log('AI returned note sequence. Synthesizing locally...');
+      const blob = await synthesizeToWav(aiRes.notes, aiRes.bpm || 90);
+      log('Download ready: song_ai.wav');
+      downloadBlob(blob, 'song_ai.wav');
+    } else if(aiRes && aiRes.type === 'wav'){
+      log('AI returned WAV. Downloading...');
+      downloadBlob(aiRes.blob, 'song_ai.wav');
+    } else if(aiRes && aiRes.type === 'url'){
+      log('AI returned URL: ' + aiRes.url);
+      // create link
+      const a = document.createElement('a');
+      a.href = aiRes.url; a.target='_blank'; a.textContent = 'Open AI audio';
+      document.getElementById('log').appendChild(a);
+      document.getElementById('log').appendChild(document.createElement('br'));
+    } else {
+      log('AI endpoint did not return usable audio. Falling back to algorithmic generator.');
+      const seq = generateNoteSequenceFromPrompt(prompt, preset);
+      const blob = await synthesizeToWav(seq.notes, seq.bpm);
+      log('Download ready: song_fallback.wav');
+      downloadBlob(blob, 'song_fallback.wav');
+    }
+  } else {
+    log('No AI endpoint provided. Using algorithmic fallback.');
+    const seq = generateNoteSequenceFromPrompt(prompt, preset);
+    const blob = await synthesizeToWav(seq.notes, seq.bpm);
+    log('Download ready: song_fallback.wav');
+    downloadBlob(blob, 'song_fallback.wav');
+  }
+
+  log('--- GENERATION END ---');
+  running = false;
+});
+
+document.getElementById('stopBtn').addEventListener('click', ()=>{
+  // For this simple static page we don't have a cancellable render pipeline.
+  // In a more advanced version we'd keep a reference to the OfflineAudioContext and call suspend/close.
+  log('Stop requested (no-op in this build).');
+});
+
+/* ---------- End of script ---------- */
+</script>
 </body>
 </html>
